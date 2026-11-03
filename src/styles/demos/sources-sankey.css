@@ -1,7 +1,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  padding: clamp(12px, 2vw, 28px);
+  padding: 68px clamp(12px, 2vw, 28px) clamp(12px, 2vw, 28px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,9 +12,31 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.demo-back {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background: #fff;
+  color: #3f4046;
+  font-size: 13px;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
+}
+
+.demo-back:hover {
+  background: #f4f4f5;
+}
+
 .sankey-card {
   width: min(1420px, 100%);
-  height: calc(100vh - 2 * clamp(12px, 2vw, 28px));
+  height: calc(100vh - 68px - clamp(12px, 2vw, 28px));
   min-height: 560px;
   display: flex;
   flex-direction: column;
@@ -225,6 +247,20 @@ body {
   color: #a1a1aa;
 }
 
+html.is-embedded body {
+  padding-top: clamp(12px, 2vw, 28px);
+}
+
+html.is-embedded .sankey-card {
+  height: calc(100vh - 2 * clamp(12px, 2vw, 28px));
+}
+
+@media (max-width: 900px) {
+  body {
+    align-items: flex-start;
+  }
+}
+
 @media (max-width: 720px) {
   .sankey-card {
     height: auto;
@@ -233,13 +269,10 @@ body {
 
   .chart-body {
     height: auto;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
   }
 
   .chart-body svg {
-    width: 854px;
+    width: 100%;
     height: auto;
   }
 

@@ -137,12 +137,21 @@ export default function SourcesSankeyDemo() {
   const [hover, setHover] = useState<Hover | null>(null);
   const [connectT, setConnectT] = useState(0);
   const [nearLabels, setNearLabels] = useState(false);
+  const [showBack, setShowBack] = useState(false);
 
   const chartRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const connectRef = useRef(0);
 
   const active = hover?.index ?? null;
+
+  useEffect(() => {
+    if (window.self === window.top) {
+      setShowBack(true);
+    } else {
+      document.documentElement.classList.add('is-embedded');
+    }
+  }, []);
 
   useEffect(() => {
     const target = nearLabels ? 1 : 0;
@@ -207,6 +216,24 @@ export default function SourcesSankeyDemo() {
 
   return (
     <div className="sankey-card">
+      {showBack && (
+        <a className="demo-back" href="/" aria-label="返回画廊">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          返回
+        </a>
+      )}
       <header className="sankey-head">
         <div>
           <h1>
