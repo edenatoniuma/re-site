@@ -92,6 +92,7 @@ function share(value: number) {
 export default function SourcesSankeyDemo() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [pinned, setPinned] = useState<number | null>(null);
+  const [nearLabels, setNearLabels] = useState(false);
 
   const active = hovered ?? pinned;
 
@@ -185,7 +186,22 @@ export default function SourcesSankeyDemo() {
       <div
         className="chart-body"
         ref={chartRef}
-        onPointerLeave={() => setHovered(null)}
+        onPointerMove={(event) => {
+          const svg = svgRef.current;
+          if (!svg) return;
+          const ctm = svg.getScreenCTM();
+          if (!ctm) return;
+          const point = svg.createSVGPoint();
+          point.x = event.clientX;
+          point.y = event.clientY;
+          const local = point.matrixTransform(ctm.inverse());
+          const next = local.x <= BAR_X + 6;
+          setNearLabels((current) => (current === next ? current : next));
+        }}
+        onPointerLeave={() => {
+          setHovered(null);
+          setNearLabels(false);
+        }}
       >
         <svg
           ref={svgRef}
@@ -225,10 +241,26 @@ export default function SourcesSankeyDemo() {
             </linearGradient>
           </defs>
 
-          {NODES.map((node) => {
+          {NODES.map((node, nodeIndex) => {
             const isActive = active === node.index;
             return (
               <g key={`node-${node.name}`}>
+                {nodeIndex < NODES.length - 1 && (
+                  <rect
+                    className="bar-connector"
+                    x={BAR_X}
+                    y={node.y + node.height}
+                    width={BAR_W}
+                    height={GAP_LEFT}
+                    fill={isActive ? '#4038d8' : '#5b57e0'}
+                    style={{
+                      transformOrigin: `${BAR_X + BAR_W / 2}px ${
+                        node.y + node.height
+                      }px`,
+                      transform: nearLabels ? 'scaleY(1)' : 'scaleY(0)',
+                    }}
+                  />
+                )}
                 <rect
                   x={BAR_X}
                   y={node.y}

@@ -111,6 +111,10 @@ body {
   filter: grayscale(1);
 }
 
+.bar-connector {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), fill 0.2s ease;
+}
+
 .hit {
   fill: none;
   stroke: transparent;
@@ -230,6 +234,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .ribbon,
+  .bar-connector,
   .label {
     transition-duration: 0.01ms !important;
   }
