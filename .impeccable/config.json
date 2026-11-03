@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-11-03T12:52:48.966Z",
         "reason": "sanctioned exception: the cream paper surface is the site-wide committed palette (global.css --paper), reused so the demo sits in the same system; not a default warm-off-white choice"
+      },
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "public/demos/credit-usage/index.html"
+        ],
+        "createdAt": "2026-11-03T13:41:43.604Z",
+        "reason": "sanctioned exception: the demo recreates a reference design whose backdrop is a blurred atmospheric photo; soft chromatic glows are the deliberate CSS stand-in for that photo, not an AI-style halo on a flat page"
       }
     ]
   }
