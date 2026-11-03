@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>点阵斥力</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #0a0d0c;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        cursor: crosshair;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .label {
+        position: fixed;
+        left: 18px;
+        bottom: 16px;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        color: #9aa894;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <div class="label">CURSOR FIELD / 移动指针</div>
+
+    <script>
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let CELL = 26;
+      let RADIUS = 170;
+      const dot = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
+
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const shortest = Math.min(width, height);
+        CELL = Math.max(14, Math.round(shortest / 14));
+        RADIUS = Math.round(shortest * 0.62);
+      }
+
+      function moveTo(x, y) {
+        dot.tx = x;
+        dot.ty = y;
+        if (reduceMotion) {
+          dot.x = x;
+          dot.y = y;
+        }
+      }
+
+      function draw() {
+        if (!reduceMotion) {
+          dot.x += (dot.tx - dot.x) * 0.12;
+          dot.y += (dot.ty - dot.y) * 0.12;
+        }
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#c9f27a';
+
+        const cols = Math.ceil(width / CELL) + 1;
+        const rows = Math.ceil(height / CELL) + 1;
+        const offsetX = (width - (cols - 1) * CELL) / 2;
+        const offsetY = (height - (rows - 1) * CELL) / 2;
+
+        for (let row = 0; row < rows; row += 1) {
+          for (let col = 0; col < cols; col += 1) {
+            const baseX = offsetX + col * CELL;
+            const baseY = offsetY + row * CELL;
+            const dx = baseX - dot.x;
+            const dy = baseY - dot.y;
+            const distance = Math.hypot(dx, dy);
+
+            const wave = reduceMotion
+              ? 0
+              : Math.sin(performance.now() * 0.0009 + col * 0.34 + row * 0.26);
+
+            let x = baseX;
+            let y = baseY;
+            let radius = 1.2 + wave * 0.35;
+            let alpha = 0.42 + wave * 0.1;
+
+            if (distance < RADIUS && distance > 0) {
+              const falloff = 1 - distance / RADIUS;
+              const push = falloff * falloff * 40;
+              x = baseX + (dx / distance) * push;
+              y = baseY + (dy / distance) * push;
+              radius = 1 + falloff * 2.4;
+              alpha = 0.35 + falloff * 0.6;
+            }
+
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener(
+        'pointermove',
+        (event) => moveTo(event.clientX, event.clientY),
+        { passive: true },
+      );
+      window.addEventListener('pointerleave', () => moveTo(-9999, -9999));
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      if (reduceMotion) {
+        dot.x = width / 2;
+        dot.y = height / 2;
+        draw();
+      } else {
+        requestAnimationFrame(draw);
+      }
+    </script>
+  </body>
+</html>

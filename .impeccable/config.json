@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "public/demos/grain-gradient/index.html"
+        ],
+        "createdAt": "2026-11-03T12:52:46.786Z",
+        "reason": "sanctioned exception: this demo's subject is a radial-gradient study; the saturated wash is the demonstrated technique, not a decorative page background"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "public/demos/marquee/index.html"
+        ],
+        "createdAt": "2026-11-03T12:52:48.966Z",
+        "reason": "sanctioned exception: the cream paper surface is the site-wide committed palette (global.css --paper), reused so the demo sits in the same system; not a default warm-off-white choice"
+      }
+    ]
+  }
+}

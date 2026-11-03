@@ -1,0 +1,98 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const demos = (await getCollection('demos')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const tags = ['全部', ...new Set(demos.flatMap((demo) => demo.data.tags))];
+const total = String(demos.length).padStart(2, '0');
+---
+
+<Base>
+  <header class="bar">
+    <div class="wrap">
+      <a class="mark" href="/">RAISE EXCEPTION</a>
+      <span class="count">{total} 件 / {new Date().getFullYear()}</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>看到的，<br />都做出来。</h1>
+      <p class="lede">把遇到的好前端设计拆开，重新写一遍，存进这里。</p>
+    </section>
+
+    <nav class="filters" aria-label="按标签筛选">
+      {
+        tags.map((tag, index) => (
+          <button
+            class:list={['filter', { 'is-active': index === 0 }]}
+            type="button"
+            data-filter={tag}
+          >
+            {tag}
+          </button>
+        ))
+      }
+    </nav>
+
+    <section class="grid" aria-label="作品列表">
+      {
+        demos.map((demo, index) => (
+          <a
+            class="card"
+            href={`/demos/${demo.id}/`}
+            data-tags={demo.data.tags.join('|')}
+            aria-label={`${demo.data.title}，打开演示`}
+          >
+            <div class="thumb">
+              <iframe
+                src={`/demos/${demo.id}/`}
+                loading="lazy"
+                tabindex="-1"
+                aria-hidden="true"
+                title=""
+              />
+            </div>
+            <div class="meta">
+              <span class="idx">{String(index + 1).padStart(2, '0')}</span>
+              <span class="title">{demo.data.title}</span>
+              <span class="tags">
+                {demo.data.tags.map((tag) => (
+                  <span>{tag}</span>
+                ))}
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </section>
+
+    <footer class="foot">
+      <span>RAISE EXCEPTION — 前端交互实验存档</span>
+      <span>{new Date().getFullYear()}</span>
+    </footer>
+  </main>
+</Base>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const cards = document.querySelectorAll<HTMLElement>('.card[data-tags]');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const tag = button.dataset.filter ?? '全部';
+
+      buttons.forEach((item) =>
+        item.classList.toggle('is-active', item === button),
+      );
+
+      cards.forEach((card) => {
+        const cardTags = (card.dataset.tags ?? '').split('|');
+        card.hidden = tag !== '全部' && !cardTags.includes(tag);
+      });
+    });
+  });
+</script>

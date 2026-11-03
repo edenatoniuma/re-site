@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>噪声渐变</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #07050b;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .scene {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .blob {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80vmax;
+        height: 80vmax;
+        margin: -40vmax 0 0 -40vmax;
+        border-radius: 50%;
+        mix-blend-mode: screen;
+        will-change: transform;
+      }
+
+      .blob-a {
+        background: radial-gradient(
+          circle,
+          rgba(255, 70, 28, 0.95) 0%,
+          rgba(255, 70, 28, 0.45) 28%,
+          rgba(255, 70, 28, 0) 56%
+        );
+        transform: translate3d(calc(var(--ax) * 1px), calc(var(--ay) * 1px), 0);
+      }
+
+      .blob-b {
+        background: radial-gradient(
+          circle,
+          rgba(28, 168, 190, 0.95) 0%,
+          rgba(28, 168, 190, 0.42) 28%,
+          rgba(28, 168, 190, 0) 56%
+        );
+        transform: translate3d(calc(var(--bx) * 1px), calc(var(--by) * 1px), 0);
+      }
+
+      .vignette {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          120% 95% at 55% 45%,
+          transparent 45%,
+          rgba(5, 4, 8, 0.5) 100%
+        );
+      }
+
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.42;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      h1 {
+        position: fixed;
+        left: 6vw;
+        bottom: 5vh;
+        margin: 0;
+        color: #f6efe6;
+        font-family: inherit;
+        font-size: clamp(3rem, 12vw, 10rem);
+        font-weight: 500;
+        line-height: 0.84;
+        letter-spacing: -0.05em;
+      }
+
+      h1 span {
+        display: block;
+      }
+
+      .hint {
+        position: fixed;
+        right: 18px;
+        top: 16px;
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: rgba(246, 239, 230, 0.85);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="blob blob-a"></div>
+      <div class="blob blob-b"></div>
+    </div>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <h1><span>噪声</span><span>渐变</span></h1>
+    <p class="hint">GRAIN GRADIENT / 移动指针</p>
+
+    <script>
+      const scene = document.querySelector('.scene');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const pointer = { x: 0.5, y: 0.5 };
+      const a = { x: -220, y: -160 };
+      const b = { x: 220, y: 160 };
+
+      function onMove(event) {
+        pointer.x = event.clientX / window.innerWidth;
+        pointer.y = event.clientY / window.innerHeight;
+      }
+
+      function frame() {
+        const targetAx = -220 + (pointer.x - 0.5) * -140;
+        const targetAy = -160 + (pointer.y - 0.5) * -110;
+        const targetBx = 220 + (pointer.x - 0.5) * 140;
+        const targetBy = 160 + (pointer.y - 0.5) * 110;
+
+        a.x += (targetAx - a.x) * 0.06;
+        a.y += (targetAy - a.y) * 0.06;
+        b.x += (targetBx - b.x) * 0.04;
+        b.y += (targetBy - b.y) * 0.04;
+
+        scene.style.setProperty('--ax', a.x.toFixed(2));
+        scene.style.setProperty('--ay', a.y.toFixed(2));
+        scene.style.setProperty('--bx', b.x.toFixed(2));
+        scene.style.setProperty('--by', b.y.toFixed(2));
+
+        if (!reduceMotion) requestAnimationFrame(frame);
+      }
+
+      window.addEventListener('pointermove', onMove, { passive: true });
+      scene.style.setProperty('--ax', a.x);
+      scene.style.setProperty('--ay', a.y);
+      scene.style.setProperty('--bx', b.x);
+      scene.style.setProperty('--by', b.y);
+      requestAnimationFrame(frame);
+    </script>
+  </body>
+</html>

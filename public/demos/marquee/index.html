@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>双向跑马灯</title>
+    <style>
+      :root {
+        --paper: #ece7dd;
+        --ink: #14110e;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1vmin;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Helvetica Neue", Helvetica, "PingFang SC", sans-serif;
+      }
+
+      .row {
+        overflow: hidden;
+        white-space: nowrap;
+        border-block: 1px solid rgba(20, 17, 14, 0.18);
+        padding-block: 0.06em;
+      }
+
+      .track {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+      }
+
+      .set {
+        display: flex;
+        flex-shrink: 0;
+      }
+
+      .set span {
+        display: inline-block;
+        padding-inline: 0.12em;
+        font-size: clamp(2.5rem, 9vw, 7.5rem);
+        font-weight: 800;
+        line-height: 1.16;
+        letter-spacing: -0.04em;
+      }
+
+      .row:nth-child(even) .set span {
+        color: transparent;
+        -webkit-text-stroke: 1.5px var(--ink);
+      }
+
+      .hint {
+        position: fixed;
+        left: 14px;
+        bottom: 14px;
+        z-index: 2;
+        margin: 0;
+        padding: 6px 9px;
+        background: var(--paper);
+        border: 1px solid rgba(20, 17, 14, 0.25);
+        font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: rgba(20, 17, 14, 0.78);
+      }
+    </style>
+  </head>
+  <body>
+    <p class="hint">MARQUEE / 指针上下移动改变速度</p>
+
+    <script>
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (window.self !== window.top) {
+        document.querySelector('.hint').hidden = true;
+      }
+      const phraseSets = [
+        '拆开 · 重写 · 存档 · ',
+        'STUDY → REBUILD → REPEAT · ',
+        '遇到好设计就拆开重写 · ',
+      ];
+
+      const pointer = { y: 0.5 };
+      const rows = [];
+      const rowCount = 4;
+
+      for (let index = 0; index < rowCount; index += 1) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        const track = document.createElement('div');
+        track.className = 'track';
+        row.appendChild(track);
+        document.body.insertBefore(row, document.querySelector('.hint'));
+
+        const text = phraseSets[index % phraseSets.length];
+        const set = document.createElement('div');
+        set.className = 'set';
+        track.appendChild(set);
+
+        const addSpan = () => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          set.appendChild(span);
+        };
+
+        addSpan();
+        while (set.getBoundingClientRect().width < window.innerWidth * 1.3) {
+          addSpan();
+        }
+
+        track.appendChild(set.cloneNode(true));
+
+        const width = set.getBoundingClientRect().width;
+        const direction = index % 2 === 0 ? -1 : 1;
+
+        rows.push({
+          track,
+          width,
+          direction,
+          speed: 0.9 + index * 0.35,
+          x: direction === 1 ? -width : 0,
+        });
+      }
+
+      window.addEventListener(
+        'pointermove',
+        (event) => {
+          pointer.y = event.clientY / window.innerHeight;
+        },
+        { passive: true },
+      );
+
+      function frame() {
+        const factor = 1 + (pointer.y - 0.5) * 2.2;
+
+        for (const row of rows) {
+          row.x += row.direction * row.speed * factor;
+
+          if (row.direction === -1 && row.x <= -row.width) row.x += row.width;
+          if (row.direction === 1 && row.x >= 0) row.x -= row.width;
+
+          row.track.style.transform = `translate3d(${row.x.toFixed(2)}px, 0, 0)`;
+        }
+
+        if (!reduceMotion) requestAnimationFrame(frame);
+      }
+
+      requestAnimationFrame(frame);
+    </script>
+  </body>
+</html>
