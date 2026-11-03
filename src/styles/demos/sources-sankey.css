@@ -107,8 +107,7 @@ body {
 }
 
 .ribbon.is-dim {
-  opacity: 0.22;
-  filter: grayscale(1);
+  opacity: 0.12;
 }
 
 .bar-connector {
@@ -135,15 +134,25 @@ body {
 }
 
 .flow-tip {
-  position: absolute;
-  z-index: 4;
-  width: min(292px, calc(100% - 16px));
+  position: fixed;
+  z-index: 40;
+  width: min(292px, calc(100vw - 16px));
+  transform: translate(-50%, -100%);
+  visibility: hidden;
   padding: 14px 16px;
   border: 1px solid #e7e7eb;
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 18px 44px rgba(22, 22, 45, 0.14);
   pointer-events: none;
+}
+
+.flow-tip.is-expanded {
+  width: min(300px, calc(100vw - 16px));
+}
+
+.source-bar {
+  cursor: pointer;
 }
 
 .flow-tip h3 {
