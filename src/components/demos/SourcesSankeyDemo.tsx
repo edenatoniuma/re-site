@@ -2,99 +2,128 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import '../../styles/demos/sources-sankey.css';
 
-const W = 1200;
-const H = 580;
-const PAD_Y = 26;
-const GAP_LEFT = 9;
-const GAP_RIGHT = 3;
-const LABEL_X = 320;
-const BAR_X = 344;
+const W = 854;
+const H = 562;
+const STACK = 482;
+const GROUP_X = 220;
+const GROUP_Y = 40;
+const GAP_LEFT = 10;
+const GAP_RIGHT = 6;
+const INSET = 3;
 const BAR_W = 8;
-const RIBBON_X1 = 354;
-const RIBBON_X2 = 1120;
-const BAR_RIGHT_X = 1120;
-const BAR_RIGHT_W = 10;
-const TARGET_LABEL_X = 1146;
+const RIBBON_X1 = 10;
+const RIBBON_X2 = 404;
+const BAR_RIGHT_X = 404;
+const BAR_RIGHT_W = 8;
+const TARGET_LABEL_X = 420;
+const LABEL_X = -16;
+const NAV_THRESHOLD = GROUP_X + BAR_W + 12;
 
 const SOURCES = [
-  { name: 'shopchief.ai', value: 30 },
-  { name: 'fazier.com', value: 18 },
-  { name: 'thereisanaiforyou.com', value: 14 },
-  { name: 'topai.tools', value: 12 },
-  { name: 'uraitools.com', value: 10 },
-  { name: 'herramientas.ai', value: 9 },
-  { name: 'agentlyfy.ai', value: 5 },
-  { name: 'aiagentsdirectory.com', value: 5 },
-  { name: 'aisotools.com', value: 4 },
-  { name: 'github.com', value: 4 },
-  { name: 'kuponaut.com', value: 4 },
-  { name: 'peerlist.io', value: 3 },
-  { name: 'theresanaiforthat.com', value: 3 },
-  { name: 'topbusinesssoftware.com', value: 3 },
-  { name: 'agentry.com', value: 2.5 },
-  { name: 'aiwizard.ai', value: 2.5 },
-  { name: 'instagram.com', value: 2 },
-  { name: 'toolify.ai', value: 1.8 },
+  { name: 'shopchief.ai', value: 7 },
+  { name: 'fazier.com', value: 3 },
+  { name: 'thereisanaiforyou.com', value: 3 },
+  { name: 'topai.tools', value: 2 },
+  { name: 'uraitools.com', value: 2 },
+  { name: 'herramientas.ai', value: 2 },
+  { name: 'agentlyfy.ai', value: 1 },
+  { name: 'aiagentsdirectory.com', value: 1 },
+  { name: 'aisotools.com', value: 1 },
+  { name: 'github.com', value: 1 },
+  { name: 'kuponaut.com', value: 1 },
+  { name: 'peerlist.io', value: 1 },
+  { name: 'theresanaiforthat.com', value: 1 },
+  { name: 'topbusinesssoftware.com', value: 1 },
+  { name: 'agentry.com', value: 1 },
+  { name: 'aiwizard.ai', value: 1 },
+  { name: 'instagram.com', value: 1 },
+  { name: 'toolify.ai', value: 1 },
 ];
 
 const TOTAL = SOURCES.reduce((sum, item) => sum + item.value, 0);
-const UNIT = (H - PAD_Y * 2 - GAP_LEFT * (SOURCES.length - 1)) / TOTAL;
+const UNIT = (STACK - GAP_LEFT * (SOURCES.length - 1)) / TOTAL;
 
 type Node = {
   index: number;
   name: string;
   value: number;
-  height: number;
-  y: number;
+  restY: number;
+  restH: number;
+  connY: number;
+  connH: number;
+  rightTop: number;
+  rightBottom: number;
   center: number;
-  rightCenter: number;
-  path: string;
 };
 
-let cursor = PAD_Y;
-const rightHeight = TOTAL * UNIT + GAP_RIGHT * (SOURCES.length - 1);
-let rightCursor = (H - rightHeight) / 2;
+const rightStack =
+  TOTAL * UNIT -
+  2 * INSET * SOURCES.length +
+  GAP_RIGHT * (SOURCES.length - 1);
+const rightTopBase = (STACK - rightStack) / 2;
+
+let leftCursor = 0;
+let connCursor = 0;
+let rightCursor = rightTopBase;
 
 const NODES: Node[] = SOURCES.map((source, index) => {
-  const height = source.value * UNIT;
-  const y = cursor;
-  const center = y + height / 2;
-  cursor += height + GAP_LEFT;
+  const restH = source.value * UNIT;
+  const restY = leftCursor;
+  leftCursor += restH + GAP_LEFT;
 
-  const rightCenter = rightCursor + height / 2;
-  rightCursor += height + GAP_RIGHT;
+  const connH = (source.value / TOTAL) * STACK;
+  const connY = connCursor;
+  connCursor += connH;
 
-  const control = (RIBBON_X2 - RIBBON_X1) * 0.45;
-  const path = `M${RIBBON_X1},${center.toFixed(1)} C${(
-    RIBBON_X1 + control
-  ).toFixed(1)},${center.toFixed(1)} ${(RIBBON_X2 - control).toFixed(1)},${rightCenter.toFixed(
-    1,
-  )} ${RIBBON_X2},${rightCenter.toFixed(1)}`;
+  const thickness = restH - INSET * 2;
+  const rightTop = rightCursor;
+  rightCursor += thickness + GAP_RIGHT;
 
   return {
     index,
     name: source.name,
     value: source.value,
-    height,
-    y,
-    center,
-    rightCenter,
-    path,
+    restY,
+    restH,
+    connY,
+    connH,
+    rightTop,
+    rightBottom: rightTop + thickness,
+    center: restY + restH / 2,
   };
 });
 
-const TARGET_TOP = (H - rightHeight) / 2;
-
-function share(value: number) {
+function percent(value: number) {
   return ((value / TOTAL) * 100).toFixed(1);
 }
 
-function citations(value: number) {
-  return Math.round(value);
+function ribbonPath(
+  leftTop: number,
+  leftBottom: number,
+  rightTop: number,
+  rightBottom: number,
+) {
+  const control = (RIBBON_X1 + RIBBON_X2) / 2;
+  return `M ${RIBBON_X1} ${leftTop.toFixed(
+    2,
+  )} C ${control} ${leftTop.toFixed(2)} ${control} ${rightTop.toFixed(
+    2,
+  )} ${RIBBON_X2} ${rightTop.toFixed(
+    2,
+  )} L ${RIBBON_X2} ${rightBottom.toFixed(
+    2,
+  )} C ${control} ${rightBottom.toFixed(2)} ${control} ${leftBottom.toFixed(
+    2,
+  )} ${RIBBON_X1} ${leftBottom.toFixed(2)} Z`;
 }
 
-function responses(value: number) {
-  return Math.max(1, Math.round(value / 4));
+function centerPath(leftCenter: number, rightCenter: number) {
+  const control = (RIBBON_X1 + RIBBON_X2) / 2;
+  return `M ${RIBBON_X1} ${leftCenter.toFixed(
+    2,
+  )} C ${control} ${leftCenter.toFixed(2)} ${control} ${rightCenter.toFixed(
+    2,
+  )} ${RIBBON_X2} ${rightCenter.toFixed(2)}`;
 }
 
 type Hover = {
@@ -106,57 +135,60 @@ type Hover = {
 
 export default function SourcesSankeyDemo() {
   const [hover, setHover] = useState<Hover | null>(null);
-  const [labelHover, setLabelHover] = useState<number | null>(null);
-  const [pinned, setPinned] = useState<number | null>(null);
-  const [pinAnchor, setPinAnchor] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [connectT, setConnectT] = useState(0);
   const [nearLabels, setNearLabels] = useState(false);
 
   const chartRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
+  const connectRef = useRef(0);
 
-  const active = hover?.index ?? pinned;
-  const tipIndex = active;
-  const expanded = hover ? hover.kind === 'ribbon' : pinned !== null;
+  const active = hover?.index ?? null;
 
   useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setPinned(null);
-        setHover(null);
-      }
+    const target = nearLabels ? 1 : 0;
+    if (connectRef.current === target) return;
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      connectRef.current = target;
+      setConnectT(target);
+      return;
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+
+    const from = connectRef.current;
+    const start = performance.now();
+    let frame = 0;
+
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - start) / 420);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = from + (target - from) * eased;
+      connectRef.current = value;
+      setConnectT(value);
+      if (progress < 1) frame = requestAnimationFrame(step);
+    };
+
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [nearLabels]);
 
   useEffect(() => {
-    if (tipIndex === null) return;
+    if (!hover) return;
     const tip = tipRef.current;
     if (!tip) return;
-    const anchor = hover ?? pinAnchor;
-    if (!anchor) return;
 
     const width = tip.offsetWidth;
     const height = tip.offsetHeight;
     const margin = 8;
     const x = Math.min(
-      Math.max(anchor.x, width / 2 + margin),
+      Math.max(hover.x, width / 2 + margin),
       window.innerWidth - width / 2 - margin,
     );
-    const y = Math.max(anchor.y - 12, height + margin);
+    const y = Math.max(hover.y - 14, height + margin);
 
     tip.style.left = `${Math.round(x)}px`;
     tip.style.top = `${Math.round(y)}px`;
     tip.style.visibility = 'visible';
-  }, [tipIndex, hover, pinAnchor, expanded]);
-
-  const ordered = [...NODES].sort(
-    (a, b) => Number(a.index === active) - Number(b.index === active),
-  );
-
-  const currentNode = active === null ? null : NODES[active];
+  }, [hover]);
 
   function hoverBar(index: number, event: ReactPointerEvent<Element>) {
     setHover({ index, kind: 'bar', x: event.clientX, y: event.clientY });
@@ -166,26 +198,12 @@ export default function SourcesSankeyDemo() {
     setHover({ index, kind: 'ribbon', x: event.clientX, y: event.clientY });
   }
 
-  function rowAnchor(index: number) {
-    const svg = chartRef.current?.querySelector('svg');
-    const ctm = svg?.getScreenCTM();
-    if (!svg || !ctm) return null;
-    const point = svg.createSVGPoint();
-    point.x = RIBBON_X1;
-    point.y = NODES[index].center;
-    const screen = point.matrixTransform(ctm);
-    return { x: screen.x, y: screen.y };
+  function openSource(name: string) {
+    window.open(`https://${name}`, '_blank', 'noopener,noreferrer');
   }
 
-  function togglePin(index: number, anchor?: { x: number; y: number }) {
-    if (pinned === index) {
-      setPinned(null);
-      return;
-    }
-    setPinned(index);
-    const next = anchor ?? rowAnchor(index);
-    if (next) setPinAnchor(next);
-  }
+  const currentNode = active === null ? null : NODES[active];
+  const expanded = hover?.kind === 'ribbon';
 
   return (
     <div className="sankey-card">
@@ -234,12 +252,11 @@ export default function SourcesSankeyDemo() {
           point.x = event.clientX;
           point.y = event.clientY;
           const local = point.matrixTransform(ctm.inverse());
-          const next = local.x <= BAR_X + 6;
+          const next = local.x <= NAV_THRESHOLD;
           setNearLabels((current) => (current === next ? current : next));
         }}
         onPointerLeave={() => {
           setHover(null);
-          setLabelHover(null);
           setNearLabels(false);
         }}
       >
@@ -248,163 +265,128 @@ export default function SourcesSankeyDemo() {
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label="Sankey diagram of sources driving ShopChief brand mentions"
-          onClick={(event) => {
-            const target = event.target as Element;
-            if (!target.closest('.hit, .label, .source-bar')) {
-              setPinned(null);
-              setHover(null);
-            }
-          }}
         >
           <defs>
             <linearGradient
               id="flow"
               gradientUnits="userSpaceOnUse"
-              x1={RIBBON_X1}
+              x1={GROUP_X + RIBBON_X1}
               y1="0"
-              x2={RIBBON_X2}
+              x2={GROUP_X + RIBBON_X2}
               y2="0"
             >
-              <stop offset="0%" stopColor="#8d8bf0" />
-              <stop offset="52%" stopColor="#a2b2d3" />
-              <stop offset="100%" stopColor="#86c39c" />
-            </linearGradient>
-            <linearGradient
-              id="flow-active"
-              gradientUnits="userSpaceOnUse"
-              x1={RIBBON_X1}
-              y1="0"
-              x2={RIBBON_X2}
-              y2="0"
-            >
-              <stop offset="0%" stopColor="#5b54ef" />
-              <stop offset="55%" stopColor="#7184bd" />
-              <stop offset="100%" stopColor="#3e9b62" />
+              <stop offset="0%" stopColor="#4f39f6" />
+              <stop offset="100%" stopColor="#16a34a" />
             </linearGradient>
           </defs>
 
-          {NODES.map((node, nodeIndex) => {
-            const isActive = active === node.index;
-            return (
-              <g key={`node-${node.name}`}>
-                {nodeIndex < NODES.length - 1 && (
-                  <rect
-                    className="bar-connector"
-                    x={BAR_X}
-                    y={node.y + node.height}
-                    width={BAR_W}
-                    height={GAP_LEFT}
-                    fill={isActive ? '#4038d8' : '#5b57e0'}
-                    style={{
-                      transformOrigin: `${BAR_X + BAR_W / 2}px ${
-                        node.y + node.height
-                      }px`,
-                      transform: nearLabels ? 'scaleY(1)' : 'scaleY(0)',
-                    }}
-                  />
-                )}
-                <rect
-                  className="source-bar"
-                  x={BAR_X}
-                  y={node.y}
-                  width={BAR_W}
-                  height={node.height}
-                  rx="2"
-                  fill={isActive ? '#4038d8' : '#5b57e0'}
-                  onPointerEnter={(event) => hoverBar(node.index, event)}
-                  onPointerMove={(event) => hoverBar(node.index, event)}
-                  onPointerLeave={() => setHover(null)}
-                  style={{ transition: 'fill 0.2s ease' }}
-                />
-                <text
-                  className={
-                    labelHover === node.index || isActive
-                      ? 'label is-active'
-                      : 'label'
-                  }
-                  x={LABEL_X}
-                  y={node.center + 5}
-                  textAnchor="end"
-                  fill="#6b68e0"
-                  onPointerEnter={() => setLabelHover(node.index)}
-                  onPointerLeave={() => setLabelHover(null)}
-                >
-                  {node.name}
-                </text>
-              </g>
-            );
-          })}
+          <g transform={`translate(${GROUP_X},${GROUP_Y})`}>
+            {NODES.map((node) => {
+              const t = connectT;
+              const height = node.restH + (node.connH - node.restH) * t;
+              const y = node.restY + (node.connY - node.restY) * t;
+              const inset = INSET;
+              const leftTop = y + inset;
+              const leftBottom = y + height - inset;
+              const leftCenter = (leftTop + leftBottom) / 2;
+              const rightCenter = (node.rightTop + node.rightBottom) / 2;
 
-          <rect
-            x={BAR_RIGHT_X}
-            y={TARGET_TOP}
-            width={BAR_RIGHT_W}
-            height={rightHeight}
-            rx="3"
-            fill="#3d9b4f"
-          />
-          <text className="target-label" x={TARGET_LABEL_X} y={H / 2 + 5}>
-            ShopChief
-          </text>
-
-          <g>
-            {ordered.map((node) => {
               const isActive = active === node.index;
               const isDim = active !== null && !isActive;
-              const width = isActive ? node.height * 1.7 + 4 : node.height;
 
               return (
-                <g key={`flow-${node.name}`}>
+                <g key={node.name}>
+                  <rect
+                    className="source-bar"
+                    x="0"
+                    y={y}
+                    width={BAR_W}
+                    height={height}
+                    fill="#4f39f6"
+                    onPointerEnter={(event) => hoverBar(node.index, event)}
+                    onPointerMove={(event) => hoverBar(node.index, event)}
+                    onPointerLeave={() => setHover(null)}
+                    onClick={() => openSource(node.name)}
+                  />
+                  <text
+                    className="label"
+                    x={LABEL_X}
+                    y={leftCenter + 4}
+                    textAnchor="end"
+                    fill="#4f39f6"
+                    onClick={() => openSource(node.name)}
+                  >
+                    {node.name}
+                  </text>
                   <path
                     className="hit"
-                    d={node.path}
-                    strokeWidth={Math.max(node.height + 16, 26)}
+                    d={centerPath(leftCenter, rightCenter)}
+                    strokeWidth={Math.max(height + 16, 26)}
                     tabIndex={0}
                     role="button"
-                    aria-label={`${node.name}, ${responses(
-                      node.value,
-                    )} responses`}
-                    aria-pressed={pinned === node.index}
-                    onPointerEnter={(event) => hoverRibbon(node.index, event)}
+                    aria-label={`${node.name}, ${node.value} responses`}
+                    onPointerEnter={(event) =>
+                      hoverRibbon(node.index, event)
+                    }
                     onPointerMove={(event) => hoverRibbon(node.index, event)}
                     onPointerLeave={() => setHover(null)}
                     onFocus={() => {
-                      const anchor = rowAnchor(node.index);
-                      if (anchor) {
-                        setHover({
-                          index: node.index,
-                          kind: 'ribbon',
-                          x: anchor.x,
-                          y: anchor.y,
-                        });
-                      }
+                      const svg = chartRef.current?.querySelector('svg');
+                      const ctm = svg?.getScreenCTM();
+                      if (!svg || !ctm) return;
+                      const point = svg.createSVGPoint();
+                      point.x = GROUP_X + RIBBON_X1;
+                      point.y = GROUP_Y + leftCenter;
+                      const screen = point.matrixTransform(ctm);
+                      setHover({
+                        index: node.index,
+                        kind: 'ribbon',
+                        x: screen.x,
+                        y: screen.y,
+                      });
                     }}
                     onBlur={() => setHover(null)}
-                    onClick={(event) =>
-                      togglePin(node.index, {
-                        x: event.clientX,
-                        y: event.clientY,
-                      })
-                    }
+                    onClick={() => openSource(node.name)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        togglePin(node.index);
+                        openSource(node.name);
                       }
                     }}
                   />
                   <path
                     className={isDim ? 'ribbon is-dim' : 'ribbon'}
-                    d={node.path}
-                    stroke={isActive ? 'url(#flow-active)' : 'url(#flow)'}
-                    strokeWidth={width}
+                    d={ribbonPath(
+                      leftTop,
+                      leftBottom,
+                      node.rightTop,
+                      node.rightBottom,
+                    )}
+                    fill="url(#flow)"
                     style={{
-                      opacity: isDim ? 0.12 : isActive ? 1 : 0.72,
+                      opacity: isDim ? 0.1 : isActive ? 0.9 : 0.5,
                     }}
                   />
                 </g>
               );
             })}
+
+            <rect
+              x={BAR_RIGHT_X}
+              y={rightTopBase}
+              width={BAR_RIGHT_W}
+              height={rightStack}
+              fill="#16a34a"
+            />
+            <text
+              className="target-label"
+              x={TARGET_LABEL_X}
+              y={STACK / 2}
+              dominantBaseline="middle"
+              fill="#16a34a"
+            >
+              ShopChief
+            </text>
           </g>
         </svg>
 
@@ -413,40 +395,43 @@ export default function SourcesSankeyDemo() {
             className={expanded ? 'flow-tip is-expanded' : 'flow-tip'}
             ref={tipRef}
           >
-            <h3>{currentNode.name}</h3>
-            <div className="tip-metrics">
-              <span>
-                {expanded
-                  ? `${responses(currentNode.value)} responses`
-                  : `${citations(currentNode.value)} citations`}
-              </span>
-              <span className="pct">{share(currentNode.value)}%</span>
-            </div>
-
-            {expanded && (
-              <ul className="tip-list">
-                <li>
-                  <span className="num">1</span>
-                  <span>
-                    LLM cited <b>{currentNode.name}</b> as a source
+            {expanded ? (
+              <>
+                <div className="tip-header">
+                  <span className="tip-title">
+                    {currentNode.value}{' '}
+                    {currentNode.value === 1 ? 'response' : 'responses'}
                   </span>
-                </li>
-                <li>
-                  <span className="num">2</span>
+                  <span className="tip-pct">{percent(currentNode.value)}%</span>
+                </div>
+                <div className="tip-list">
+                  <div>
+                    <span className="num">1</span>
+                    <span>
+                      LLM cited <b>{currentNode.name}</b> as a source
+                    </span>
+                  </div>
+                  <div>
+                    <span className="num">2</span>
+                    <span>
+                      <b>{currentNode.name}</b> & the LLM mention{' '}
+                      <b className="shop">ShopChief</b>
+                    </span>
+                  </div>
+                </div>
+                <p className="tip-foot">Click to view these source pages</p>
+              </>
+            ) : (
+              <>
+                <p className="tip-name">{currentNode.name}</p>
+                <div className="tip-metrics">
                   <span>
-                    <b>{currentNode.name}</b> & the LLM mention{' '}
-                    <b className="shop">ShopChief</b>
+                    {currentNode.value}{' '}
+                    {currentNode.value === 1 ? 'citation' : 'citations'}
                   </span>
-                </li>
-              </ul>
-            )}
-
-            {expanded && (
-              <p className="tip-foot">
-                {pinned === currentNode.index
-                  ? 'Click again to unpin · Esc to clear'
-                  : 'Click to keep this source highlighted'}
-              </p>
+                  <span className="tip-pct">{percent(currentNode.value)}%</span>
+                </div>
+              </>
             )}
           </div>
         )}
