@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../../styles/demos/sources-sankey.css';
 
 const W = 1200;
@@ -14,6 +14,7 @@ const RIBBON_X2 = 1120;
 const BAR_RIGHT_X = 1120;
 const BAR_RIGHT_W = 10;
 const TARGET_LABEL_X = 1146;
+const TIP_X = 336;
 
 const SOURCES = [
   { name: 'shopchief.ai', value: 30 },
@@ -37,8 +38,7 @@ const SOURCES = [
 ];
 
 const TOTAL = SOURCES.reduce((sum, item) => sum + item.value, 0);
-const UNIT =
-  (H - PAD_Y * 2 - GAP_LEFT * (SOURCES.length - 1)) / TOTAL;
+const UNIT = (H - PAD_Y * 2 - GAP_LEFT * (SOURCES.length - 1)) / TOTAL;
 
 type Node = {
   index: number;
@@ -71,17 +71,81 @@ const NODES: Node[] = SOURCES.map((source, index) => {
     1,
   )} ${RIBBON_X2},${rightCenter.toFixed(1)}`;
 
-  return { index, name: source.name, value: source.value, height, y, center, rightCenter, path };
+  return {
+    index,
+    name: source.name,
+    value: source.value,
+    height,
+    y,
+    center,
+    rightCenter,
+    path,
+  };
 });
 
 const TARGET_TOP = (H - rightHeight) / 2;
 
+function share(value: number) {
+  return ((value / TOTAL) * 100).toFixed(1);
+}
+
 export default function SourcesSankeyDemo() {
-  const [active, setActive] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [pinned, setPinned] = useState<number | null>(null);
+
+  const active = hovered ?? pinned;
+
+  const chartRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setPinned(null);
+        setHovered(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    if (active === null) return;
+    const svg = svgRef.current;
+    const tip = tipRef.current;
+    const wrap = chartRef.current;
+    if (!svg || !tip || !wrap) return;
+
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+
+    const point = svg.createSVGPoint();
+    point.x = TIP_X;
+    point.y = NODES[active].center;
+    const screen = point.matrixTransform(ctm);
+    const wrapRect = wrap.getBoundingClientRect();
+
+    const tipWidth = tip.offsetWidth;
+    const tipHeight = tip.offsetHeight;
+    const x = Math.min(
+      Math.max(8, screen.x - wrapRect.left),
+      wrapRect.width - tipWidth - 8,
+    );
+    const y = Math.min(
+      Math.max(8, screen.y - wrapRect.top - tipHeight / 2),
+      wrapRect.height - tipHeight - 8,
+    );
+
+    tip.style.left = `${x}px`;
+    tip.style.top = `${y}px`;
+  }, [active, pinned]);
 
   const ordered = [...NODES].sort(
     (a, b) => Number(a.index === active) - Number(b.index === active),
   );
+
+  const currentNode = active === null ? null : NODES[active];
 
   return (
     <div className="sankey-card">
@@ -118,12 +182,21 @@ export default function SourcesSankeyDemo() {
         </button>
       </header>
 
-      <div className="chart-body" onPointerLeave={() => setActive(null)}>
+      <div
+        className="chart-body"
+        ref={chartRef}
+        onPointerLeave={() => setHovered(null)}
+      >
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label="Sankey diagram of sources driving ShopChief brand mentions"
+          onClick={(event) => {
+            const target = event.target as Element;
+            if (!target.closest('.hit, .label')) setPinned(null);
+          }}
         >
           <defs>
             <linearGradient
@@ -138,33 +211,54 @@ export default function SourcesSankeyDemo() {
               <stop offset="52%" stopColor="#a2b2d3" />
               <stop offset="100%" stopColor="#86c39c" />
             </linearGradient>
+            <linearGradient
+              id="flow-active"
+              gradientUnits="userSpaceOnUse"
+              x1={RIBBON_X1}
+              y1="0"
+              x2={RIBBON_X2}
+              y2="0"
+            >
+              <stop offset="0%" stopColor="#4f49e8" />
+              <stop offset="55%" stopColor="#5f76b8" />
+              <stop offset="100%" stopColor="#2f8f58" />
+            </linearGradient>
           </defs>
 
-          {NODES.map((node) => (
-            <g key={`node-${node.name}`}>
-              <rect
-                x={BAR_X}
-                y={node.y}
-                width={BAR_W}
-                height={node.height}
-                rx="2"
-                fill="#5b57e0"
-              />
-              <text
-                className={
-                  active === node.index ? 'label is-active' : 'label'
-                }
-                x={LABEL_X}
-                y={node.center + 5}
-                textAnchor="end"
-                fill="#6b68e0"
-                onPointerEnter={() => setActive(node.index)}
-                onPointerLeave={() => setActive(null)}
-              >
-                {node.name}
-              </text>
-            </g>
-          ))}
+          {NODES.map((node) => {
+            const isActive = active === node.index;
+            return (
+              <g key={`node-${node.name}`}>
+                <rect
+                  x={BAR_X}
+                  y={node.y}
+                  width={BAR_W}
+                  height={node.height}
+                  rx="2"
+                  fill={isActive ? '#4038d8' : '#5b57e0'}
+                  style={{ transition: 'fill 0.2s ease' }}
+                />
+                <text
+                  className={
+                    isActive ? 'label is-active' : 'label'
+                  }
+                  x={LABEL_X}
+                  y={node.center + 5}
+                  textAnchor="end"
+                  fill="#6b68e0"
+                  onPointerEnter={() => setHovered(node.index)}
+                  onPointerLeave={() => setHovered(null)}
+                  onClick={() =>
+                    setPinned((current) =>
+                      current === node.index ? null : node.index,
+                    )
+                  }
+                >
+                  {node.name}
+                </text>
+              </g>
+            );
+          })}
 
           <rect
             x={BAR_RIGHT_X}
@@ -174,11 +268,7 @@ export default function SourcesSankeyDemo() {
             rx="3"
             fill="#3d9b4f"
           />
-          <text
-            className="target-label"
-            x={TARGET_LABEL_X}
-            y={H / 2 + 5}
-          >
+          <text className="target-label" x={TARGET_LABEL_X} y={H / 2 + 5}>
             ShopChief
           </text>
 
@@ -196,15 +286,30 @@ export default function SourcesSankeyDemo() {
                     strokeWidth={Math.max(node.height + 16, 26)}
                     tabIndex={0}
                     role="button"
-                    aria-label={`${node.name}, ${node.value} mentions`}
-                    onPointerEnter={() => setActive(node.index)}
-                    onFocus={() => setActive(node.index)}
-                    onBlur={() => setActive(null)}
+                    aria-label={`${node.name}, ${Math.round(node.value)} citations`}
+                    aria-pressed={pinned === node.index}
+                    onPointerEnter={() => setHovered(node.index)}
+                    onPointerLeave={() => setHovered(null)}
+                    onFocus={() => setHovered(node.index)}
+                    onBlur={() => setHovered(null)}
+                    onClick={() =>
+                      setPinned((current) =>
+                        current === node.index ? null : node.index,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setPinned((current) =>
+                          current === node.index ? null : node.index,
+                        );
+                      }
+                    }}
                   />
                   <path
                     className={isDim ? 'ribbon is-dim' : 'ribbon'}
                     d={node.path}
-                    stroke="url(#flow)"
+                    stroke={isActive ? 'url(#flow-active)' : 'url(#flow)'}
                     strokeWidth={width}
                   />
                 </g>
@@ -212,6 +317,39 @@ export default function SourcesSankeyDemo() {
             })}
           </g>
         </svg>
+
+        {currentNode && (
+          <div className="flow-tip" ref={tipRef}>
+            <h3>{currentNode.name}</h3>
+            <div className="tip-metrics">
+              <span>{Math.round(currentNode.value)} citations</span>
+              <span className="pct">{share(currentNode.value)}%</span>
+            </div>
+
+            {pinned === currentNode.index && (
+              <>
+                <ul className="tip-list">
+                  <li>
+                    <span className="num">1</span>
+                    <span>
+                      LLM cited <b>{currentNode.name}</b> as a source
+                    </span>
+                  </li>
+                  <li>
+                    <span className="num">2</span>
+                    <span>
+                      <b>{currentNode.name}</b> & the LLM mention{' '}
+                      <b className="shop">ShopChief</b>
+                    </span>
+                  </li>
+                </ul>
+                <p className="tip-foot">
+                  Click again to unpin · Esc to clear
+                </p>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
