@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>积分用量</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --text: #f4f4f5;
+        --muted: #9a9ca3;
+        --line: rgba(255, 255, 255, 0.08);
+        --panel: #141519;
+        --track: #303237;
+        --accent: #8b8bf0;
+        --teal: #2dd4bf;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        padding: clamp(16px, 4vw, 44px);
+        display: grid;
+        place-items: center;
+        background: #050708;
+        color: var(--text);
+        font-family: system-ui, -apple-system, "SF Pro Text", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      .scene {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        overflow: hidden;
+        background: radial-gradient(
+          120% 90% at 50% 0%,
+          #0d1719 0%,
+          #070b0c 55%,
+          #040607 100%
+        );
+      }
+
+      .scene i {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.6;
+      }
+
+      .scene .a {
+        width: 62vw;
+        height: 85vh;
+        left: -10vw;
+        top: -12vh;
+        background: radial-gradient(circle, #1c5a5f 0%, transparent 65%);
+      }
+
+      .scene .b {
+        width: 48vw;
+        height: 72vh;
+        right: -8vw;
+        top: 4vh;
+        background: radial-gradient(circle, #164b52 0%, transparent 65%);
+      }
+
+      .scene .c {
+        width: 72vw;
+        height: 55vh;
+        left: 14vw;
+        bottom: -22vh;
+        background: radial-gradient(circle, #0f3a3c 0%, transparent 65%);
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.14;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      .back {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        padding: 8px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(18, 19, 22, 0.6);
+        color: #e8e8ea;
+        font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-decoration: none;
+        backdrop-filter: blur(8px);
+      }
+
+      .back:hover {
+        background: #f4f4f5;
+        color: #0a0b0d;
+      }
+
+      .panel {
+        width: min(880px, 100%);
+        padding: clamp(14px, 2.4vw, 22px);
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(20, 21, 24, 0.74);
+        backdrop-filter: blur(24px);
+        box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 6px 8px 18px;
+      }
+
+      .identity {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .logo {
+        flex: none;
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #1d1e22;
+        border: 1px solid var(--line);
+        color: #b9babe;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .sub {
+        margin: 2px 0 0;
+        font-size: 13.5px;
+        color: var(--muted);
+      }
+
+      .btn-ghost {
+        flex: none;
+        padding: 11px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        background: #24252a;
+        color: #f0f0f2;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.18s ease;
+      }
+
+      .btn-ghost:hover {
+        background: #303138;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 20px;
+      }
+
+      .usage {
+        padding: clamp(18px, 3vw, 26px);
+      }
+
+      .usage-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .amount {
+        margin: 0;
+        font-size: clamp(34px, 5.2vw, 46px);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .amount .unit {
+        font-size: clamp(15px, 2vw, 19px);
+        font-weight: 400;
+        color: var(--muted);
+        letter-spacing: 0;
+      }
+
+      .pct {
+        margin: 0;
+        font-size: clamp(15px, 2vw, 18px);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .segment-wrap {
+        position: relative;
+        margin-top: 22px;
+        padding-block: 2px;
+      }
+
+      .segments {
+        display: flex;
+        gap: 5px;
+        height: clamp(26px, 4vw, 38px);
+      }
+
+      .seg {
+        display: block;
+        flex: 1 1 0;
+        min-width: 0;
+        border-radius: 2px;
+        background: var(--track);
+        transform: scaleY(0.04);
+        transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      body.ready .seg {
+        transform: none;
+      }
+
+      .seg.used {
+        background: #f4f4f5;
+      }
+
+      .seg.run {
+        background: var(--accent);
+      }
+
+      .marker {
+        position: absolute;
+        top: -8px;
+        bottom: -8px;
+        width: 0;
+        border-left: 1px dashed rgba(255, 255, 255, 0.45);
+        pointer-events: none;
+      }
+
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-size: 13.5px;
+        color: #a3a5ac;
+      }
+
+      .key {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        white-space: nowrap;
+      }
+
+      .key b {
+        color: #e6e6e8;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sw {
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+      }
+
+      .sw.used {
+        background: #f4f4f5;
+      }
+
+      .sw.run {
+        background: var(--accent);
+      }
+
+      .proj {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .proj .dash {
+        width: 0;
+        height: 14px;
+        border-left: 1px dashed rgba(255, 255, 255, 0.45);
+      }
+
+      .period {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .period-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 15px;
+      }
+
+      .period-head p {
+        margin: 0;
+      }
+
+      .period-head b {
+        font-weight: 600;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .chart {
+        display: flex;
+        align-items: flex-end;
+        gap: clamp(3px, 0.6vw, 7px);
+        height: clamp(72px, 12vw, 98px);
+        margin-top: 16px;
+      }
+
+      .bar {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 0;
+        border-radius: 3px;
+        background: #4a4c52;
+        transition: height 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+          background-color 0.2s ease;
+        cursor: default;
+      }
+
+      body.ready .bar {
+        height: var(--h);
+      }
+
+      .bar:hover,
+      .bar:focus-visible {
+        background: #6b6d74;
+        outline: none;
+      }
+
+      .bar.today {
+        background: #f4f4f5;
+        position: relative;
+      }
+
+      .bar.today::after {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 6px;
+        border-radius: 3px 3px 0 0;
+        background: var(--accent);
+      }
+
+      .bar.future {
+        background: transparent;
+        border: 1px dashed rgba(255, 255, 255, 0.35);
+      }
+
+      .bar.future:hover,
+      .bar.future:focus-visible {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .tooltip {
+        position: fixed;
+        z-index: 5;
+        transform: translate(-50%, -100%);
+        padding: 6px 9px;
+        border-radius: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #25262b;
+        color: #e9e9ec;
+        font-size: 12px;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      .breakdown {
+        margin-top: 12px;
+        padding: 6px clamp(18px, 3vw, 26px);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 0;
+      }
+
+      .row + .row {
+        border-top: 1px solid rgba(255, 255, 255, 0.055);
+      }
+
+      .icon {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        color: #8f9097;
+      }
+
+      .row-main {
+        flex: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .name {
+        font-size: 16px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .meta {
+        font-size: 13.5px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .track {
+        flex: none;
+        width: clamp(110px, 26%, 230px);
+        height: 4px;
+        border-radius: 999px;
+        background: var(--track);
+        overflow: hidden;
+      }
+
+      .track i {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: 999px;
+        background: #f4f4f5;
+        transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      body.ready .track i {
+        width: var(--w);
+      }
+
+      .val {
+        flex: none;
+        min-width: 62px;
+        text-align: right;
+        font-size: 19px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .composer {
+        margin-top: 12px;
+        padding: 16px clamp(16px, 2.6vw, 20px) 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: var(--panel);
+      }
+
+      .composer textarea {
+        display: block;
+        width: 100%;
+        min-height: 26px;
+        max-height: 120px;
+        padding: 2px 4px;
+        border: 0;
+        outline: none;
+        resize: none;
+        background: transparent;
+        color: #f0f0f2;
+        font: inherit;
+        font-size: 16.5px;
+        line-height: 1.45;
+      }
+
+      .composer-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .icon-btn {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        color: #d6d6da;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .icon-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .pill {
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #1e1f24;
+        color: #e8e8ea;
+        font: inherit;
+        font-size: 14.5px;
+        cursor: pointer;
+      }
+
+      .pill:hover {
+        background: #26272d;
+      }
+
+      .estimate {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #c9cace;
+        font-size: 13.5px;
+        white-space: nowrap;
+      }
+
+      .estimate .dot {
+        color: #6a6b72;
+      }
+
+      .send {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: var(--teal);
+        color: #06201d;
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+      }
+
+      .send:hover {
+        transform: translateY(-1px);
+        background: #43e0cc;
+      }
+
+      .send:active {
+        transform: scale(0.96);
+      }
+
+      .send.sent {
+        background: #f4f4f5;
+      }
+
+      @media (max-width: 960px) {
+        body {
+          padding-top: 60px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .track {
+          display: none;
+        }
+
+        .row-main {
+          flex-wrap: wrap;
+          gap: 2px 8px;
+        }
+
+        .proj {
+          margin-left: 0;
+          width: 100%;
+        }
+
+        .estimate {
+          margin-left: 0;
+          order: 3;
+        }
+
+        .composer-bar .send {
+          margin-left: auto;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back" href="/">← 返回</a>
+
+    <div class="scene" aria-hidden="true">
+      <i class="a"></i><i class="b"></i><i class="c"></i>
+    </div>
+
+    <main class="panel">
+      <header class="head">
+        <div class="identity">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 8a4 4 0 1 1-4 4" />
+            </svg>
+          </span>
+          <div>
+            <h1>Usage</h1>
+            <p class="sub">Pro plan · resets Nov 1</p>
+          </div>
+        </div>
+        <button class="btn-ghost" type="button">Get more</button>
+      </header>
+
+      <section class="card usage" aria-label="Credit usage">
+        <div class="usage-head">
+          <p class="amount"><span id="used">0</span> <span class="unit">of 10,000 credits</span></p>
+          <p class="pct"><span id="pct">0</span>% used</p>
+        </div>
+
+        <div class="segment-wrap">
+          <div class="segments" id="segments" aria-hidden="true"></div>
+          <div class="marker" style="left: 93%"></div>
+        </div>
+
+        <div class="legend">
+          <span class="key"><i class="sw used"></i>Used <b id="legend-used">6,420</b></span>
+          <span class="key"><i class="sw run"></i>This run ≈ <b>48</b></span>
+          <span class="proj"><i class="dash"></i>9,300 projected by Nov 1</span>
+        </div>
+
+        <div class="period">
+          <div class="period-head">
+            <p><b>This period</b> <span class="muted">Oct 2 – Nov 1</span></p>
+            <p><b id="per-day">0</b> <span class="muted">a day so far</span></p>
+          </div>
+
+          <div class="chart" id="chart" role="img" aria-label="每日积分消耗，过去 22 天为实心柱，未来 8 天为虚线预估"></div>
+          <div class="tooltip" id="tooltip" hidden></div>
+        </div>
+      </section>
+
+      <section class="card breakdown" aria-label="Usage breakdown">
+        <div class="row">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 19v-7M12 19V5M19 19v-9" />
+          </svg>
+          <div class="row-main"><span class="name">Deep analysis</span><span class="meta">214 questions</span></div>
+          <div class="track"><i style="--w: 100%"></i></div>
+          <span class="val" data-count="3980">0</span>
+        </div>
+
+        <div class="row">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+            <path d="M3 13l9 5 9-5" />
+          </svg>
+          <div class="row-main"><span class="name">Agent runs</span><span class="meta">19 runs</span></div>
+          <div class="track"><i style="--w: 41%"></i></div>
+          <span class="val" data-count="1640">0</span>
+        </div>
+
+        <div class="row">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+            <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
+          </svg>
+          <div class="row-main"><span class="name">Quick answers</span><span class="meta">702 questions</span></div>
+          <div class="track"><i style="--w: 13%"></i></div>
+          <span class="val" data-count="520">0</span>
+        </div>
+
+        <div class="row">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="3" />
+            <path d="M8 3v4M16 3v4M3 11h18" />
+          </svg>
+          <div class="row-main"><span class="name">Scheduled reports</span><span class="meta">8 reports</span></div>
+          <div class="track"><i style="--w: 7%"></i></div>
+          <span class="val" data-count="280">0</span>
+        </div>
+      </section>
+
+      <div class="composer">
+        <textarea rows="1" spellcheck="false" aria-label="Prompt">Build a board-ready Q3 growth report and send it to #leadership</textarea>
+        <div class="composer-bar">
+          <button class="icon-btn" type="button" aria-label="Add attachment">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+          <button class="pill" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+              <path d="M3 13l9 5 9-5" />
+            </svg>
+            Agent
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <span class="estimate">◎ ≈ 48 credits <span class="dot">·</span> ~6 min</span>
+          <button class="icon-btn" type="button" aria-label="Voice input">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+            </svg>
+          </button>
+          <button class="send" type="button" aria-label="Send">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const TOTAL = 10000;
+      const USED = 6420;
+      const RUN = 48;
+      const PROJECTED = 9300;
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const fmt = (n) => n.toLocaleString('en-US');
+
+      if (window.self !== window.top) {
+        document.querySelector('.back').hidden = true;
+      }
+
+      function countUp(el, to, duration = 900) {
+        if (reduceMotion) {
+          el.textContent = fmt(to);
+          return;
+        }
+        const start = performance.now();
+        const step = (now) => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          el.textContent = fmt(Math.round(to * eased));
+          if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+
+      const segments = document.getElementById('segments');
+      const chart = document.getElementById('chart');
+      const tooltip = document.getElementById('tooltip');
+
+      function renderSegments() {
+        const width = segments.clientWidth || 700;
+        const count = Math.max(24, Math.min(60, Math.round(width / 15)));
+        const filled = Math.max(1, Math.round((USED / TOTAL) * count));
+
+        segments.innerHTML = '';
+        for (let i = 0; i < count; i += 1) {
+          const seg = document.createElement('i');
+          seg.className = 'seg';
+          if (i < filled - 1) seg.classList.add('used');
+          else if (i === filled - 1) seg.classList.add('run');
+          seg.style.transitionDelay = reduceMotion ? '0ms' : i * 10 + 'ms';
+          segments.appendChild(seg);
+        }
+      }
+
+      const PAST = [
+        0.8, 1, 1.15, 0.95, 0.65, 0.55, 1.1, 1.3, 1.2, 0.9, 0.72, 0.62, 0.92,
+        1.13, 1.03, 0.82, 0.68, 0.99, 1.23, 1.06, 0.86, 0.78,
+      ];
+      const FUTURE = [0.9, 1.05, 0.95, 1.1, 0.85, 1, 0.92, 1.08];
+      const PAST_SUM = PAST.reduce((sum, v) => sum + v, 0);
+      const pastValues = PAST.map((v) => Math.round((v / PAST_SUM) * USED));
+      pastValues[pastValues.length - 1] +=
+        USED - pastValues.reduce((sum, v) => sum + v, 0);
+
+      const futureAvg = (PROJECTED - USED) / FUTURE.length;
+      const futureSum = FUTURE.reduce((sum, v) => sum + v, 0);
+      const futureValues = FUTURE.map((v) =>
+        Math.round((v / futureSum) * futureAvg * FUTURE.length),
+      );
+
+      const maxValue = Math.max(...pastValues, ...futureValues);
+
+      function dayLabel(index) {
+        const date = new Date(2026, 9, 2 + index);
+        return 'Oct ' + date.getDate();
+      }
+
+      function buildChart() {
+        const bars = [];
+
+        pastValues.forEach((value, index) => {
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          if (index === pastValues.length - 1) bar.classList.add('today');
+          bar.style.setProperty('--h', ((value / maxValue) * 100).toFixed(1) + '%');
+          bar.style.transitionDelay = reduceMotion ? '0ms' : index * 18 + 'ms';
+          bar.setAttribute('aria-label', `${dayLabel(index)}, ${value} credits`);
+          bar.dataset.tip = `${dayLabel(index)} · ${fmt(value)} credits`;
+          bars.push(bar);
+        });
+
+        futureValues.forEach((value, index) => {
+          const bar = document.createElement('div');
+          bar.className = 'bar future';
+          const dayIndex = pastValues.length + index;
+          bar.style.setProperty('--h', ((value / maxValue) * 100).toFixed(1) + '%');
+          bar.style.transitionDelay = reduceMotion ? '0ms' : dayIndex * 18 + 'ms';
+          bar.setAttribute(
+            'aria-label',
+            `${dayLabel(dayIndex)}, projected ${value} credits`,
+          );
+          bar.dataset.tip = `${dayLabel(dayIndex)} · projected ${fmt(value)}`;
+          bars.push(bar);
+        });
+
+        bars.forEach((bar) => {
+          bar.addEventListener('pointerenter', () => showTip(bar));
+          bar.addEventListener('pointerleave', hideTip);
+          chart.appendChild(bar);
+        });
+      }
+
+      function showTip(bar) {
+        const rect = bar.getBoundingClientRect();
+        tooltip.textContent = bar.dataset.tip;
+        tooltip.style.left = rect.left + rect.width / 2 + 'px';
+        tooltip.style.top = rect.top - 8 + 'px';
+        tooltip.hidden = false;
+      }
+
+      function hideTip() {
+        tooltip.hidden = true;
+      }
+
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(renderSegments, 150);
+      });
+
+      renderSegments();
+      buildChart();
+
+      document.getElementById('legend-used').textContent = fmt(USED);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => document.body.classList.add('ready'), 60);
+      });
+
+      countUp(document.getElementById('used'), USED);
+      countUp(document.getElementById('pct'), Math.round((USED / TOTAL) * 100), 900);
+      countUp(document.getElementById('per-day'), Math.round(USED / 22), 900);
+      document.querySelectorAll('.val[data-count]').forEach((el) => {
+        countUp(el, Number(el.dataset.count), 1000);
+      });
+
+      const textarea = document.querySelector('.composer textarea');
+      textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      });
+    </script>
+  </body>
+</html>
