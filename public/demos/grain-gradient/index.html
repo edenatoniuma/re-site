@@ -94,6 +94,24 @@
         display: block;
       }
 
+      .back {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        padding: 8px 11px;
+        border: 1px solid rgba(246, 239, 230, 0.28);
+        background: rgba(10, 7, 16, 0.55);
+        color: #f6efe6;
+        font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-decoration: none;
+        backdrop-filter: blur(6px);
+      }
+      .back:hover {
+        background: #f6efe6;
+        color: #0a0710;
+      }
+
       .hint {
         position: fixed;
         right: 18px;
@@ -106,6 +124,7 @@
     </style>
   </head>
   <body>
+    <a class="back" href="/">← 返回</a>
     <div class="scene">
       <div class="blob blob-a"></div>
       <div class="blob blob-b"></div>
@@ -116,6 +135,10 @@
     <p class="hint">GRAIN GRADIENT / 移动指针</p>
 
     <script>
+      if (window.self !== window.top) {
+        document.querySelector('.back').hidden = true;
+      }
+
       const scene = document.querySelector('.scene');
       const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 

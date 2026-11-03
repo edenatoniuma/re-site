@@ -33,13 +33,34 @@
         color: #9aa894;
         pointer-events: none;
       }
+      .back {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        padding: 8px 11px;
+        border: 1px solid rgba(201, 242, 122, 0.35);
+        background: rgba(201, 242, 122, 0.12);
+        color: #c9f27a;
+        font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-decoration: none;
+      }
+      .back:hover {
+        background: #c9f27a;
+        color: #0a0d0c;
+      }
     </style>
   </head>
   <body>
+    <a class="back" href="/">← 返回</a>
     <canvas></canvas>
     <div class="label">CURSOR FIELD / 移动指针</div>
 
     <script>
+      if (window.self !== window.top) {
+        document.querySelector('.back').hidden = true;
+      }
+
       const canvas = document.querySelector('canvas');
       const ctx = canvas.getContext('2d');
       const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;

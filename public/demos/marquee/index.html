@@ -57,6 +57,23 @@
         -webkit-text-stroke: 1.5px var(--ink);
       }
 
+      .back {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        padding: 8px 11px;
+        border: 1px solid rgba(20, 17, 14, 0.25);
+        background: var(--ink);
+        color: var(--paper);
+        font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-decoration: none;
+      }
+      .back:hover {
+        background: transparent;
+        color: var(--ink);
+      }
+
       .hint {
         position: fixed;
         left: 14px;
@@ -72,6 +89,7 @@
     </style>
   </head>
   <body>
+    <a class="back" href="/">← 返回</a>
     <p class="hint">MARQUEE / 指针上下移动改变速度</p>
 
     <script>
@@ -79,6 +97,7 @@
 
       if (window.self !== window.top) {
         document.querySelector('.hint').hidden = true;
+        document.querySelector('.back').hidden = true;
       }
       const phraseSets = [
         '拆开 · 重写 · 存档 · ',
