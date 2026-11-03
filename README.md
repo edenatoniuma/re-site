@@ -45,4 +45,6 @@ wrangler.jsonc                   Cloudflare 部署配置，指向 dist/
 | :---------------- | :-------------------------------- |
 | `npm run dev`     | 本地开发 `localhost:4321`         |
 | `npm run build`   | 构建到 `dist/`                    |
-| `npm run deploy`  | 构建并发布到 Cloudflare Workers   |
+| `npm run deploy`  | 本地构建并手动发布到 Cloudflare   |
+
+推送到 `main` 会由 Cloudflare Workers Builds 自动构建部署；`npm run deploy` 仍然可以手动发布。
