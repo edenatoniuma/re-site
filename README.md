@@ -8,34 +8,46 @@ Astro 静态站点，部署在 Cloudflare Workers（静态资源托管）。
 ## 结构
 
 ```text
-public/demos/<slug>/index.html   每个 demo 的完整页面（HTML/CSS/JS 自包含）
+src/pages/demos/<slug>.astro     React demo 页面（新 demo 走这里）
+src/components/demos/*.tsx       React demo 组件
+src/styles/demos/*.css           demo 样式
+src/data/                        demo 用到的数据（地图边界等）
+public/demos/<slug>/index.html   早期静态 demo（纯 HTML/CSS/JS）
 src/content/demos/<slug>.md      画廊条目：标题、年份、标签、备注
 src/pages/index.astro            画廊首页（网格 + 标签筛选）
 src/styles/global.css            设计变量与画廊样式
 wrangler.jsonc                   Cloudflare 部署配置，指向 dist/
 ```
 
+新建 demo 一律用 React：组件写 `src/components/demos/`，页面用 `src/pages/demos/<slug>.astro` 包一层 `DemoLayout` + `client:load`。URL 仍是 `/demos/<slug>/`，画廊 iframe 不用改。
+
 画廊卡片里的缩略图是 `/demos/<slug>/` 的实时 iframe，不是截图 —— demo 改了，缩略图自动跟着变。
 
 ## 新增一个收藏
 
-1. 在 `public/demos/` 下建目录，放入自包含的 `index.html`（可带 CSS/JS/图片资源，互不干扰）：
-   ```text
-   public/demos/my-demo/index.html
+1. 写组件 `src/components/demos/MyDemo.tsx`，样式放 `src/styles/demos/my-demo.css` 并在组件里 import。
+2. 建页面 `src/pages/demos/my-demo.astro`：
+   ```astro
+   ---
+   import DemoLayout from '../../layouts/DemoLayout.astro';
+   import MyDemo from '../../components/demos/MyDemo.tsx';
+   ---
+   <DemoLayout title="我的收藏">
+     <MyDemo client:load />
+   </DemoLayout>
    ```
-2. 在 `src/content/demos/` 下加同名条目：
+3. 在 `src/content/demos/` 下加条目：
    ```md
    ---
    title: 我的收藏
    year: 2026
-   tags: [Canvas, 交互]
-   order: 4
+   tags: [React, 交互]
+   order: 6
    ---
    ```
-3. 上线：
-   ```sh
-   npm run deploy
-   ```
+4. 上线：`git push`（或 `npm run deploy`）。
+
+URL 和条目 slug 必须一致：`/demos/my-demo/`。
 
 标签会自动出现在首页筛选栏，不用改代码。
 
