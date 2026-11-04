@@ -34,6 +34,19 @@ export default function RegionSelectDemo() {
 
   useEffect(() => () => window.clearTimeout(saveTimer.current), []);
 
+  useEffect(() => {
+    if (window.self === window.top) return;
+    setCountries(
+      new Set([
+        'United States of America',
+        'Brazil',
+        'Germany',
+        'Japan',
+        'Australia',
+      ]),
+    );
+  }, []);
+
   const count =
     level === 'global'
       ? 1
@@ -108,12 +121,6 @@ export default function RegionSelectDemo() {
   return (
     <div className="shell">
       <header className="topbar">
-        <span className="logo" aria-hidden="true">
-          <svg viewBox="0 0 16 16" width="14" height="14" fill="#fff">
-            <rect x="2" y="3" width="12" height="4" rx="1" />
-            <rect x="2" y="9" width="8" height="4" rx="1" />
-          </svg>
-        </span>
         <a className="back" href="/">
           <svg
             viewBox="0 0 24 24"
@@ -130,26 +137,6 @@ export default function RegionSelectDemo() {
           </svg>
           Back
         </a>
-        <div className="top-right">
-          <span className="who">Logged in as contact@raise-exception.com</span>
-          <button className="logout" type="button">
-            <svg
-              viewBox="0 0 24 24"
-              width="15"
-              height="15"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
-              <path d="M10 8l-4 4 4 4M6 12h10" />
-            </svg>
-            Log out
-          </button>
-        </div>
       </header>
 
       <main>
@@ -232,17 +219,6 @@ export default function RegionSelectDemo() {
           </button>
         </section>
       </main>
-
-      <footer>
-        <span>©2026 RAISE EXCEPTION</span>
-        <nav>
-          <a href="#">Terms of service</a>
-          <span className="sep">|</span>
-          <a href="#">DPA</a>
-          <span className="sep">|</span>
-          <a href="#">Privacy policy</a>
-        </nav>
-      </footer>
     </div>
   );
 }

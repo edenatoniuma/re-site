@@ -2,9 +2,9 @@
         --ink: #111214;
         --muted: #6f7076;
         --line: #e4e4e7;
-        --land: #ebebec;
-        --land-hover: #d6d6d9;
-        --paper: #fafafa;
+        --land: oklch(0.19 0.012 60 / 0.1);
+        --land-hover: oklch(0.19 0.012 60 / 0.18);
+        --paper: oklch(0.968 0.007 85);
       }
 
       *,
@@ -37,10 +37,10 @@
         min-height: 640px;
         margin: 0 auto;
         padding: clamp(14px, 1.6vw, 24px);
-        background: #fff;
-        border: 1px solid var(--line);
-        border-radius: 22px;
-        box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
       }
 
       .topbar {
@@ -50,16 +50,6 @@
         padding: 4px 4px 12px;
       }
 
-      .logo {
-        width: 26px;
-        height: 26px;
-        display: grid;
-        place-items: center;
-        border-radius: 6px;
-        background: var(--ink);
-        flex: none;
-      }
-
       .back {
         display: inline-flex;
         align-items: center;
@@ -67,7 +57,7 @@
         padding: 9px 14px;
         border: 1px solid var(--line);
         border-radius: 10px;
-        background: #fff;
+        background: transparent;
         color: var(--ink);
         font: inherit;
         font-size: 14px;
@@ -76,37 +66,6 @@
       }
 
       .back:hover {
-        background: #f4f4f5;
-      }
-
-      .top-right {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-
-      .who {
-        font-size: 13.5px;
-        color: var(--muted);
-        white-space: nowrap;
-      }
-
-      .logout {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 14px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #fff;
-        color: var(--ink);
-        font: inherit;
-        font-size: 14px;
-        cursor: pointer;
-      }
-
-      .logout:hover {
         background: #f4f4f5;
       }
 
@@ -138,7 +97,7 @@
 
       .country {
         fill: var(--land);
-        stroke: #fff;
+        stroke: var(--paper);
         stroke-width: 0.8;
         vector-effect: non-scaling-stroke;
         cursor: pointer;
@@ -164,12 +123,12 @@
         pointer-events: none;
         background: linear-gradient(
             90deg,
-            #fff 0%,
-            rgba(255, 255, 255, 0) 14%
+            var(--paper) 0%,
+            transparent 14%
           ),
-          linear-gradient(270deg, #fff 0%, rgba(255, 255, 255, 0) 10%),
-          linear-gradient(0deg, #fff 0%, rgba(255, 255, 255, 0) 20%),
-          linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0) 8%);
+          linear-gradient(270deg, var(--paper) 0%, transparent 10%),
+          linear-gradient(0deg, var(--paper) 0%, transparent 20%),
+          linear-gradient(180deg, var(--paper) 0%, transparent 8%);
       }
 
       .map-status {
@@ -294,42 +253,7 @@
         background: #1c7c54;
       }
 
-      footer {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px 18px;
-        justify-content: space-between;
-        align-items: center;
-        padding: 18px 4px 2px;
-        font-size: 13.5px;
-        color: var(--muted);
-      }
-
-      footer nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px 12px;
-        align-items: center;
-      }
-
-      footer a {
-        color: var(--muted);
-        text-decoration: none;
-      }
-
-      footer a:hover {
-        color: var(--ink);
-      }
-
-      footer .sep {
-        color: #d4d4d8;
-      }
-
       @media (max-width: 720px) {
-        .who {
-          display: none;
-        }
-
         .map {
           min-height: 180px;
         }
@@ -348,6 +272,49 @@
           padding: 10px 14px;
           font-size: 14px;
         }
+      }
+
+      html.is-embedded body {
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      html.is-embedded .shell {
+        width: 100%;
+        max-width: none;
+        height: 100vh;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+      }
+
+      html.is-embedded .topbar,
+      html.is-embedded .prompt {
+        display: none;
+      }
+
+      html.is-embedded .map {
+        flex: 1;
+        min-height: 0;
+      }
+
+      html.is-embedded .map svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      html.is-embedded .map::after {
+        display: none;
+      }
+
+      html.is-embedded .country {
+        stroke: transparent;
       }
 
       @media (prefers-reduced-motion: reduce) {

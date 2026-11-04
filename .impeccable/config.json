@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-11-03T13:41:43.604Z",
         "reason": "sanctioned exception: the demo recreates a reference design whose backdrop is a blurred atmospheric photo; soft chromatic glows are the deliberate CSS stand-in for that photo, not an AI-style halo on a flat page"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "public/demos/credit-usage/index.html"
+        ],
+        "createdAt": "2026-11-04T08:50:47.197Z",
+        "reason": "user confirmed: asked the demo background to match the homepage; the cream paper is the site-wide committed palette (global.css --paper), reused deliberately, not a default warm off-white"
       }
     ]
   }

@@ -5,8 +5,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f5f5f6;
-  color: #16171a;
+  background: oklch(0.968 0.007 85);
+  color: oklch(0.19 0.012 60);
   font-family: system-ui, -apple-system, "SF Pro Text", "Segoe UI",
     "PingFang SC", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -21,17 +21,16 @@ body {
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid #e4e4e7;
+  border: 1px solid oklch(0.19 0.012 60 / 0.16);
   border-radius: 10px;
-  background: #fff;
-  color: #3f4046;
+  background: transparent;
+  color: oklch(0.19 0.012 60);
   font-size: 13px;
   text-decoration: none;
-  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
 }
 
 .demo-back:hover {
-  background: #f4f4f5;
+  background: oklch(0.94 0.009 85);
 }
 
 .sankey-card {
@@ -41,65 +40,8 @@ body {
   display: flex;
   flex-direction: column;
   padding: clamp(16px, 2vw, 26px);
-  background: #fff;
-  border: 1px solid #e9e9ec;
-  border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
+  background: transparent;
   overflow: hidden;
-}
-
-.sankey-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 2px 4px 10px;
-}
-
-.sankey-head h1 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.info-dot {
-  width: 15px;
-  height: 15px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid #c9c9ce;
-  border-radius: 50%;
-  color: #8a8a90;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 500;
-}
-
-.sankey-sub {
-  margin: 6px 0 0;
-  font-size: 15px;
-  color: #6f7076;
-}
-
-.grid-btn {
-  flex: none;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #e4e4e7;
-  border-radius: 10px;
-  background: #fff;
-  color: #3f4046;
-  cursor: pointer;
-}
-
-.grid-btn:hover {
-  background: #f4f4f5;
 }
 
 .chart-body {
@@ -248,11 +190,29 @@ body {
 }
 
 html.is-embedded body {
-  padding-top: clamp(12px, 2vw, 28px);
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
 }
 
 html.is-embedded .sankey-card {
-  height: calc(100vh - 2 * clamp(12px, 2vw, 28px));
+  box-sizing: border-box;
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html.is-embedded .chart-body {
+  flex: 1;
+}
+
+html.is-embedded .chart-body svg {
+  height: 100%;
 }
 
 @media (max-width: 900px) {
@@ -274,10 +234,6 @@ html.is-embedded .sankey-card {
   .chart-body svg {
     width: 100%;
     height: auto;
-  }
-
-  .sankey-sub {
-    font-size: 14px;
   }
 }
 

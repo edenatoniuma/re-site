@@ -234,39 +234,6 @@ export default function SourcesSankeyDemo() {
           返回
         </a>
       )}
-      <header className="sankey-head">
-        <div>
-          <h1>
-            Sources Visualization <span className="info-dot">i</span>
-          </h1>
-          <p className="sankey-sub">
-            Sources driving brand mentions in AI responses
-          </p>
-        </div>
-        <button className="grid-btn" type="button" aria-label="Layout options">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            {[3, 8, 13].map((x) =>
-              [3, 8, 13].map((y) => (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x - 1.2}
-                  y={y - 1.2}
-                  width="2.4"
-                  height="2.4"
-                  rx="0.6"
-                />
-              )),
-            )}
-          </svg>
-        </button>
-      </header>
-
       <div
         className="chart-body"
         ref={chartRef}
