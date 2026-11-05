@@ -1,0 +1,16 @@
+---
+import DemoLayout from '../../layouts/DemoLayout.astro';
+import PiAgentDemo from '../../components/demos/PiAgentDemo.tsx';
+---
+
+<DemoLayout title="Pi Agent" lang="zh-CN">
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+  </Fragment>
+  <PiAgentDemo client:load />
+</DemoLayout>

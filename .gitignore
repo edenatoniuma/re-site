@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # impeccable cache
 .impeccable/hook.cache.json
+
+# local agent repos
+agent/

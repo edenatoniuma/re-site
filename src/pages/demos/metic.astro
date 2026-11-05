@@ -1,0 +1,56 @@
+---
+import homepage from '../../data/metic.html?raw';
+
+const back = `
+<script>
+  (function () {
+    var CSS = [
+      'a#demo-back {',
+      '  position: fixed;',
+      '  bottom: 18px;',
+      '  left: 18px;',
+      '  z-index: 2147483000;',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  gap: 7px;',
+      '  padding: 8px 13px;',
+      '  border: 1px solid rgb(20 20 19 / 0.14);',
+      '  border-radius: 10px;',
+      '  background: rgb(255 255 255 / 0.74);',
+      '  -webkit-backdrop-filter: blur(10px);',
+      '  backdrop-filter: blur(10px);',
+      '  color: #1b1b19;',
+      '  font: 500 13px/1 ui-sans-serif, -apple-system, "PingFang SC", sans-serif;',
+      '  text-decoration: none;',
+      '  box-shadow: 0 6px 20px -14px rgb(0 0 0 / 0.4);',
+      '  transition: background 0.15s ease;',
+      '}',
+      'a#demo-back:hover { background: #fff; }',
+    ].join('\\n');
+
+    function mount() {
+      if (window.self !== window.top || document.getElementById('demo-back')) return;
+      var style = document.createElement('style');
+      style.textContent = CSS;
+      document.head.appendChild(style);
+      var link = document.createElement('a');
+      link.id = 'demo-back';
+      link.href = '/';
+      link.setAttribute('aria-label', '返回画廊');
+      link.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>Back';
+      document.body.appendChild(link);
+    }
+
+    window.addEventListener('load', function () {
+      window.setTimeout(mount, 300);
+    });
+  })();
+</script>
+`;
+
+const page = homepage.includes('</body>')
+  ? homepage.replace('</body>', `${back}</body>`)
+  : homepage + back;
+---
+
+<Fragment set:html={page} />
