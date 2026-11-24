@@ -9,9 +9,9 @@ import '../../styles/global.css';
     <h2>上下文压缩</h2>
     <p class="intro">前台远程压缩 · 默认触发阈值为模型窗口的 90%</p>
     <figure aria-label="工具输出进入历史后，触发压缩并组装下一次调用的上下文">
-      <div class="node start"><strong>工具返回后检查用量</strong><span>示例窗口 1M，阈值设为 800k</span></div>
+      <div class="node start"><strong>工具结果按输出预算限长</strong><span>每次调用可指定预算或沿用默认值，超限内容截断后写入历史</span></div>
       <div class="edge">↓</div>
-      <div class="node"><strong>890k ≥ 800k，触发压缩</strong><span>本次工具输出也在当前历史中</span></div>
+      <div class="node"><strong>890k ≥ 800k，触发压缩</strong><span>示例窗口 1M，工具结果写入后估算已用 890k</span></div>
       <div class="fork">
         <div><div class="edge">↓</div><div class="node"><strong>整段历史生成摘要</strong><span>摘要长度随内容变化</span></div></div>
         <div><div class="edge">↓</div><div class="node"><strong>选取合格原文</strong><span>优先较新的用户消息，常规预算 64k</span></div></div>
@@ -19,6 +19,11 @@ import '../../styles/global.css';
       <div class="join" aria-hidden="true"></div><div class="edge">↓</div>
       <div class="node end"><strong>下一次模型调用</strong><span>摘要 + 保留下来的原文</span></div>
     </figure>
+    <details>
+      <summary>五个工具结果怎样计算预算？</summary>
+      <p>假设五次独立调用各设 500 tokens 的输出预算，而且结果都超限，返回给模型的正文合计约 2,500 tokens，调用记录和格式另计。</p>
+      <p>如果在一次 functions.exec 中调用这五个工具，并给外层调用设置 500 tokens 的输出预算，汇总后返回的正文共用这 500 tokens。</p>
+    </details>
     <a class="original" href="/demos/codex-compaction/explanation.png" aria-label="查看压缩说明原图">
       <img src="/demos/codex-compaction/explanation.png" width="1902" height="298" alt="默认阈值为 90%。最近的普通工具输出参与摘要，合格原文的常规预算为 64k，摘要长度另计。" />
     </a>
@@ -67,6 +72,9 @@ import '../../styles/global.css';
   .fork .node { width: 100%; flex: 1; }
   .join { border-top: 0; }
   .end { color: #fff; background: #405941; }
+  details { margin-top: 1rem; line-height: 1.6; }
+  summary { cursor: pointer; }
+  :global(.is-embedded) details { display: none; }
   .original { display: block; margin-top: 1.5rem; }
   img { display: block; width: 100%; height: auto; }
   :global(.is-embedded) h2, :global(.is-embedded) .tool-loading, :global(.is-embedded) header, :global(.is-embedded) h1, :global(.is-embedded) .intro, :global(.is-embedded) .original { display: none; }
