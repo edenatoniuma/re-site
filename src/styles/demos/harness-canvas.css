@@ -1,0 +1,15 @@
+.hc-content { padding: 20px 24px; color: var(--ink); line-height: 1.55; }
+.hc-content p { margin: 0 0 16px; }
+.hc-content h3 { margin: 20px 0 5px; font-size: 16px; }
+.hc-step { display: grid; gap: 4px; align-content: center; padding: 10px 14px; border: 1px solid #b6c8ce; border-radius: 7px; background: #edf4f7; text-align: center; }
+.hc-step strong { font-size: 16px; }
+.hc-step span { font-size: 14px; }
+.hc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.hc-pair > :last-child.hc-step, .hc-pair > :last-child > .hc-step { background: #f2f3e9; border-color: #c7cbb2; }
+.hc-arrow { color: #728783; text-align: center; line-height: 1.35; }
+.hc-content img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.hc-content table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.hc-content caption { text-align: left; margin-bottom: 12px; font-weight: 600; }
+.hc-content th, .hc-content td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.hc-content th:first-child { width: 20%; }
+.hc-content thead th { width: 40%; color: #435558; }
