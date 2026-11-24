@@ -48,6 +48,29 @@ import '../../styles/global.css';
           </div>
         </div>
       </figure>
+      <table>
+        <caption>压缩后，模型还记得怎么调用工具吗？</caption>
+        <thead>
+          <tr><th scope="col">场景</th><th scope="col">Codex 直接调用 tool_search</th><th scope="col">保存并恢复工具激活状态</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">发现工具时</th>
+            <td>把名称、说明和参数随搜索结果追加到会话历史。</td>
+            <td>追加工具声明，同时记录当前会话分支激活了哪些工具。</td>
+          </tr>
+          <tr>
+            <th scope="row">压缩后继续调试</th>
+            <td>如果搜索结果被压掉，再搜一次就能拿到调试工具的用法。</td>
+            <td>根据激活记录重建声明。即使搜索过程只剩摘要，模型也能直接调用调试工具。</td>
+          </tr>
+          <tr>
+            <th scope="row">从调试转去聊日常</th>
+            <td>压缩移除旧搜索结果后，日常对话无需再携带这份工具定义。</td>
+            <td>如果恢复全部已激活工具，旧调试工具的声明仍占用新窗口。任务切换越多，无关声明越可能积累。</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
   </main>
 </DemoLayout>
@@ -60,6 +83,11 @@ import '../../styles/global.css';
   h2 { margin: 2rem 0 .75rem; font-size: 1.35rem; }
   .tool-loading .fork .node { flex: none; margin: 0 auto; }
   .tool-loading .node { overflow-wrap: anywhere; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; line-height: 1.6; }
+  caption { text-align: left; font-weight: 600; margin-bottom: .65rem; }
+  th, td { padding: .65em; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  thead th:first-child { width: 20%; }
+  thead th { width: 40%; }
   .intro { color: var(--muted); margin: .5rem 0 1.5rem; }
   figure { margin: 0; padding: clamp(1rem, 4vw, 2rem); border: 1px solid var(--line); background: radial-gradient(#c9c9bc .8px, transparent .8px) var(--paper-2); background-size: 16px 16px; text-align: center; }
   .node { display: grid; gap: .3em; justify-content: center; align-content: center; max-width: 22rem; margin: auto; padding: .8em; background: var(--paper); border: 1px solid #a5aea3; border-radius: .45em; }
