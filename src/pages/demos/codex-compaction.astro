@@ -1,0 +1,51 @@
+---
+import DemoLayout from '../../layouts/DemoLayout.astro';
+import '../../styles/global.css';
+---
+<DemoLayout title="Codex 上下文压缩" lang="zh-CN">
+  <header><a href="/">← 返回作品列表</a></header>
+  <main>
+    <h1>Codex 上下文压缩</h1>
+    <p class="intro">前台远程压缩 · 默认触发阈值为模型窗口的 90%</p>
+    <figure aria-label="工具输出进入历史后，触发压缩并组装下一次调用的上下文">
+      <div class="node start"><strong>工具返回后检查用量</strong><span>示例窗口 1M，阈值设为 800k</span></div>
+      <div class="edge">↓</div>
+      <div class="node"><strong>890k ≥ 800k，触发压缩</strong><span>本次工具输出也在当前历史中</span></div>
+      <div class="fork">
+        <div><div class="edge">↓</div><div class="node"><strong>整段历史生成摘要</strong><span>摘要长度随内容变化</span></div></div>
+        <div><div class="edge">↓</div><div class="node"><strong>选取合格原文</strong><span>优先较新的用户消息，常规预算 64k</span></div></div>
+      </div>
+      <div class="join" aria-hidden="true"></div><div class="edge">↓</div>
+      <div class="node end"><strong>下一次模型调用</strong><span>摘要 + 保留下来的原文</span></div>
+    </figure>
+    <a class="original" href="/demos/codex-compaction/explanation.png" aria-label="查看压缩说明原图">
+      <img src="/demos/codex-compaction/explanation.png" width="1902" height="298" alt="默认阈值为 90%。最近的普通工具输出参与摘要，合格原文的常规预算为 64k，摘要长度另计。" />
+    </a>
+  </main>
+</DemoLayout>
+
+<style>
+  header { padding: 1rem clamp(1rem, 5vw, 4rem); border-bottom: 1px solid var(--line); }
+  header a { font-size: .85rem; text-decoration: none; }
+  main { max-width: 56rem; margin: auto; padding: clamp(1rem, 4vw, 3rem); }
+  h1 { font-size: clamp(1.7rem, 4vw, 3rem); margin: 0; }
+  .intro { color: var(--muted); margin: .5rem 0 1.5rem; }
+  figure { margin: 0; padding: clamp(1rem, 4vw, 2rem); border: 1px solid var(--line); background: radial-gradient(#c9c9bc .8px, transparent .8px) var(--paper-2); background-size: 16px 16px; text-align: center; }
+  .node { display: grid; gap: .3em; justify-content: center; align-content: center; max-width: 22rem; margin: auto; padding: .8em; background: var(--paper); border: 1px solid #a5aea3; border-radius: .45em; }
+  .node span { font-size: .82em; }
+  .edge { line-height: 1.5; color: #506651; }
+  .fork { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; position: relative; padding-top: .7em; }
+  .fork::before, .join { border: 1px solid #798879; width: calc(50% + .5em); margin: auto; height: .6em; }
+  .fork::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(100% - 1.3em); border-bottom: 0; }
+  .fork > div { display: flex; flex-direction: column; }
+  .fork .node { width: 100%; flex: 1; }
+  .join { border-top: 0; }
+  .end { color: #fff; background: #405941; }
+  .original { display: block; margin-top: 1.5rem; }
+  img { display: block; width: 100%; height: auto; }
+  :global(.is-embedded) header, :global(.is-embedded) h1, :global(.is-embedded) .intro, :global(.is-embedded) .original { display: none; }
+  :global(.is-embedded) main { padding: 0; max-width: none; }
+  :global(.is-embedded) figure { height: 100dvh; display: flex; flex-direction: column; justify-content: center; font-size: min(3vw, 4vh); padding: .6em 1.4em; }
+  :global(.is-embedded) figure > .node { width: 62%; margin: 0 auto; }
+  :global(.is-embedded) .join { margin: 0 auto; }
+</style>
