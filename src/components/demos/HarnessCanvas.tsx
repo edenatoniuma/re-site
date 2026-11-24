@@ -42,13 +42,11 @@ const frames = [
           </tr>
         </tbody>
       </table></> },
-  { title: '主会话与子 Agent', color: '#bd7143', x: 1320, y: 0, w: 690, h: 520, content: <>
-    <Step title="主会话派出首项任务 · spawn_agent" text="子 Agent 开始独立分析。用户中途给主会话的新信息，由主会话决定是否转发。" />{down}
-    <div className="hc-pair">
-      <div><Step title="子 Agent 正在分析" text="主会话用 send_message 转发补充条件。" />{down}<Step title="继续当前这一轮" text="消息带上发送方，在消息边界或当前工具调用结束后送达；子 Agent 据此调整下一步。" /></div>
-      <div><Step title="子 Agent 已经空闲" text="send_message 只把留言放进收件箱。若无人启动下一轮，留言会一直等待。" />{down}<Step title="需要它再分析一轮" text="主会话用 followup_task 发送任务并唤醒它。如果它已在运行，任务并入当前轮次。" /></div>
-    </div>{down}
-    <Step title="结果回到主会话" text="子 Agent 的最终答复自动送回父 Agent；中途也可以发消息报告发现。" />
+  { title: '侧栏会话之间的沟通', color: '#bd7143', x: 1320, y: 0, w: 690, h: 520, content: <>
+    <Step title="会话 A 找到已有会话 B" text="用 list_threads 找到目标线程；需要了解前情时，用 read_thread 读取 B 的消息。" />{down}
+    <Step title="A 向 B 发起一轮分析" text="send_message_to_thread 按线程 ID 把任务发给 B，同时附上 A 的线程 ID。" />{down}
+    <Step title="B 在自己的会话里处理" text="客户端恢复 B 并在后台发起 turn。B 沿用自己的历史，用户可以留在 A。" />{down}
+    <Step title="A 取回结果，继续讨论" text="A 可用 wait_threads 等待，再用 read_thread 查看 B 的答复。还有反例或新条件时，可以继续发给同一个 B。" />
   </> },
   { title: '执行循环', color: '#517b73', x: 1320, y: 550, w: 690, h: 290, content: <>
     <Step title="一条新任务启动一次 run" text="模型读取当前输入，决定下一步。" />{down}
