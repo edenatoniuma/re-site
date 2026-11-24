@@ -2,10 +2,11 @@
 import DemoLayout from '../../layouts/DemoLayout.astro';
 import '../../styles/global.css';
 ---
-<DemoLayout title="Codex 上下文压缩" lang="zh-CN">
+<DemoLayout title="Codex Harness 工作机制" lang="zh-CN">
   <header><a href="/">← 返回作品列表</a></header>
   <main>
-    <h1>Codex 上下文压缩</h1>
+    <h1>Codex Harness 工作机制</h1>
+    <h2>上下文压缩</h2>
     <p class="intro">前台远程压缩 · 默认触发阈值为模型窗口的 90%</p>
     <figure aria-label="工具输出进入历史后，触发压缩并组装下一次调用的上下文">
       <div class="node start"><strong>工具返回后检查用量</strong><span>示例窗口 1M，阈值设为 800k</span></div>
@@ -21,6 +22,28 @@ import '../../styles/global.css';
     <a class="original" href="/demos/codex-compaction/explanation.png" aria-label="查看压缩说明原图">
       <img src="/demos/codex-compaction/explanation.png" width="1902" height="298" alt="默认阈值为 90%。最近的普通工具输出参与摘要，合格原文的常规预算为 64k，摘要长度另计。" />
     </a>
+    <section class="tool-loading">
+      <h2>工具加载</h2>
+      <figure aria-label="直接暴露与延迟暴露的工具如何进入模型上下文">
+        <div class="node"><strong>按工具配置决定何时暴露定义</strong></div>
+        <div class="fork">
+          <div>
+            <div class="edge">↓</div>
+            <div class="node"><strong>直接暴露</strong><span>模型从第一次请求就能看到工具定义</span></div>
+            <div class="edge">↓</div>
+            <div class="node"><strong>直接调用</strong><span>例如用 exec_command 执行 rg</span></div>
+          </div>
+          <div>
+            <div class="edge">↓</div>
+            <div class="node"><strong>延迟暴露</strong><span>需要某项能力时，用 tool_search 搜索</span></div>
+            <div class="edge">↓</div>
+            <div class="node"><strong>按搜索结果调用</strong><span>名称、说明和参数进入对话历史，后续轮次可复用</span></div>
+            <div class="edge">↓</div>
+            <div class="node end"><strong>压缩后可能需要再搜</strong><span>如果定义丢失，仍可通过搜索重新发现可用工具</span></div>
+          </div>
+        </div>
+      </figure>
+    </section>
   </main>
 </DemoLayout>
 
@@ -29,6 +52,9 @@ import '../../styles/global.css';
   header a { font-size: .85rem; text-decoration: none; }
   main { max-width: 56rem; margin: auto; padding: clamp(1rem, 4vw, 3rem); }
   h1 { font-size: clamp(1.7rem, 4vw, 3rem); margin: 0; }
+  h2 { margin: 2rem 0 .75rem; font-size: 1.35rem; }
+  .tool-loading .fork .node { flex: none; margin: 0 auto; }
+  .tool-loading .node { overflow-wrap: anywhere; }
   .intro { color: var(--muted); margin: .5rem 0 1.5rem; }
   figure { margin: 0; padding: clamp(1rem, 4vw, 2rem); border: 1px solid var(--line); background: radial-gradient(#c9c9bc .8px, transparent .8px) var(--paper-2); background-size: 16px 16px; text-align: center; }
   .node { display: grid; gap: .3em; justify-content: center; align-content: center; max-width: 22rem; margin: auto; padding: .8em; background: var(--paper); border: 1px solid #a5aea3; border-radius: .45em; }
@@ -43,7 +69,7 @@ import '../../styles/global.css';
   .end { color: #fff; background: #405941; }
   .original { display: block; margin-top: 1.5rem; }
   img { display: block; width: 100%; height: auto; }
-  :global(.is-embedded) header, :global(.is-embedded) h1, :global(.is-embedded) .intro, :global(.is-embedded) .original { display: none; }
+  :global(.is-embedded) h2, :global(.is-embedded) .tool-loading, :global(.is-embedded) header, :global(.is-embedded) h1, :global(.is-embedded) .intro, :global(.is-embedded) .original { display: none; }
   :global(.is-embedded) main { padding: 0; max-width: none; }
   :global(.is-embedded) figure { height: 100dvh; display: flex; flex-direction: column; justify-content: center; font-size: min(3vw, 4vh); padding: .6em 1.4em; }
   :global(.is-embedded) figure > .node { width: 62%; margin: 0 auto; }
