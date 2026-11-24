@@ -48,6 +48,14 @@ const frames = [
     <Step title="B 在自己的会话里处理" text="客户端恢复 B 并在后台发起 turn。B 沿用自己的历史，用户可以留在 A。" />{down}
     <Step title="A 取回结果，继续讨论" text="A 可用 wait_threads 等待，再用 read_thread 查看 B 的答复。还有反例或新条件时，可以继续发给同一个 B。" />
   </> },
+  { title: '父子 Agent 协作', color: '#986347', x: 2040, y: 0, w: 690, h: 570, content: <>
+    <Step title="父 Agent 派发任务" text="父 Agent 调用 spawn_agent 创建子 Agent。子 Agent 收到首项任务后开始工作。" />{down}
+    <div className="hc-pair">
+      <div><Step title="子 Agent 正在分析" text="用户向父 Agent 补充条件，父 Agent 可用 send_message 转发。" />{down}<Step title="在当前轮次接收补充" text="子 Agent 在消息边界或当前工具调用结束后收到消息，按新条件继续分析。" /></div>
+      <div><Step title="子 Agent 已经空闲" text="send_message 会把消息放进收件箱，等子 Agent 下次运行时读取。" />{down}<Step title="需要它再分析一轮" text="父 Agent 用 followup_task 发任务并启动新一轮。若子 Agent 已在运行，任务会并入当前轮次。" /></div>
+    </div>{down}
+    <Step title="最终答复自动回到父 Agent" text="子 Agent 完成后，父 Agent 收到结果。子 Agent 也可以在工作中用 send_message 提前报告发现。" />
+  </> },
   { title: '执行循环', color: '#517b73', x: 1320, y: 550, w: 690, h: 290, content: <>
     <Step title="一条新任务启动一次 run" text="模型读取当前输入，决定下一步。" />{down}
     <div className="hc-pair"><Step title="请求工具 → 继续循环" text="Harness 执行工具，把结果写入历史，再调用模型。" /><Step title="给出最终答复 → 结束本轮" text="会话历史保留；下一条任务可以再启动一次 run。" /></div>
