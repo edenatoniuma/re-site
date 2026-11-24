@@ -60,6 +60,16 @@ const frames = [
     <Step title="一条新任务启动一次 run" text="模型读取当前输入，决定下一步。" />{down}
     <div className="hc-pair"><Step title="请求工具 → 继续循环" text="Harness 执行工具，把结果写入历史，再调用模型。" /><Step title="给出最终答复 → 结束本轮" text="会话历史保留；下一条任务可以再启动一次 run。" /></div>
   </> },
+  { title: '通用骨架与产品策略', color: '#786842', x: 2040, y: 600, w: 690, h: 575, content: <>
+    <Step title="同一套 Harness 可以支撑不同产品" text="执行循环、工具调度和历史记录可以复用。产品目标决定哪些信息值得记、适用多久、何时带回上下文。" />{down}
+    <Step title="以记忆为例" text="可以从单次会话提取，再跨会话整理；也可以按有效期区分长短期，按项目、偏好或人格主题组织。" />{down}
+    <h3>用户说「这周想吃清淡点」</h3>
+    <div className="hc-pair">
+      <Step title="饮食助手排餐" text="本周排餐时采用这个偏好。下个月再排餐时，重新确认用户的口味。" />
+      <Step title="代码助手审查改动" text="这条饮食偏好与代码审查无关，可以留在原会话，省下本轮上下文。" />
+    </div>
+    <p>用哥德尔不完备定理来理解这层边界，只是一种类比。这里的判断依据是记忆能否帮助用户完成当前任务。</p>
+  </> },
 ];
 export default function HarnessCanvas() {
   return <FlowCanvas title="Codex Harness 工作机制" frames={frames.map(frame => ({
